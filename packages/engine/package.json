@@ -1,0 +1,14 @@
+{
+  "name": "@vm/engine",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Pure math kernel: 2x2/3x3 linear algebra, polynomials, and the expression parser/evaluator. No rendering dependencies.",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  }
+}
