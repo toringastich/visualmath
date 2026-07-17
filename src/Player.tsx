@@ -1,5 +1,57 @@
-import { useState } from "react";
-import { WARP_URL, type Lesson } from "./lessons";
+import { useEffect, useRef, useState } from "react";
+import { WARP_URL, type Lesson, type LessonStep } from "./lessons";
+
+const TTS_AVAILABLE = "speechSynthesis" in window;
+
+/**
+ * Spoken narration for a step: plays the step's recorded audio when it has
+ * one, otherwise reads the step text with the browser's built-in TTS.
+ * Anything playing stops when the step changes.
+ */
+function useNarration(step: LessonStep, stepIndex: number) {
+  const [playing, setPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const stop = () => {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    if (TTS_AVAILABLE) speechSynthesis.cancel();
+    setPlaying(false);
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => stop, [stepIndex]);
+
+  const toggle = () => {
+    if (playing) {
+      stop();
+      return;
+    }
+    if (step.audio) {
+      const a = new Audio(step.audio);
+      audioRef.current = a;
+      a.onended = () => setPlaying(false);
+      a.onerror = () => setPlaying(false);
+      void a.play();
+      setPlaying(true);
+      return;
+    }
+    if (!TTS_AVAILABLE) return;
+    const text = [
+      step.title,
+      ...step.body,
+      step.tryThis ? `Try it: ${step.tryThis}` : "",
+    ].join(" ");
+    const u = new SpeechSynthesisUtterance(text);
+    u.onend = () => setPlaying(false);
+    u.onerror = () => setPlaying(false);
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+    setPlaying(true);
+  };
+
+  return { playing, toggle, available: Boolean(step.audio) || TTS_AVAILABLE };
+}
 
 /**
  * The lesson player: text panel on the left, a live embedded Warp scene on
@@ -18,6 +70,7 @@ export default function Player({
   const step = lesson.steps[i];
   const last = i === lesson.steps.length - 1;
   const sceneUrl = step.state ? `${WARP_URL}/#s=${step.state}` : null;
+  const narration = useNarration(step, i);
 
   return (
     <div className="player">
@@ -32,7 +85,18 @@ export default function Player({
           </span>
         </div>
 
-        <h2>{step.title}</h2>
+        <div className="step-heading">
+          <h2>{step.title}</h2>
+          {narration.available && (
+            <button
+              className={"listen-btn" + (narration.playing ? " on" : "")}
+              title={narration.playing ? "Stop narration" : "Listen to this step"}
+              onClick={narration.toggle}
+            >
+              {narration.playing ? "◼ Stop" : "▶ Listen"}
+            </button>
+          )}
+        </div>
         {step.body.map((p, k) => (
           <p key={k}>{p}</p>
         ))}

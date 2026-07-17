@@ -15,6 +15,14 @@ iframe — so **authoring a step is just building the scene in Warp and
 copying the address bar**. No lesson engine to maintain; the sandbox is the
 renderer. See `src/lessons.ts`.
 
+Current lessons: **Eigenvectors** (2D) and **The Cross Product** (3D), both
+drafts.
+
+Each step also has spoken narration (the Listen button): a step with an
+`audio` URL plays that recording; otherwise the browser's built-in
+text-to-speech reads the step text. Recorded voice-over can be added
+per-step later without touching the player.
+
 ## Getting started
 
 ```bash
