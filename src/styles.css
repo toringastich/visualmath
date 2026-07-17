@@ -19,7 +19,6 @@ html,
 body,
 #root {
   margin: 0;
-  height: 100%;
 }
 body {
   background: var(--bg);
@@ -37,14 +36,17 @@ body {
   background: var(--panel);
   padding: 48px 24px 40px;
 }
-.home-hero .brand,
-.lesson-panel .brand {
+.brand {
   display: flex;
   align-items: center;
   gap: 9px;
+  text-decoration: none;
+  color: inherit;
+}
+.home-hero .brand {
   margin-bottom: 28px;
 }
-.brand,
+.home-hero .brand,
 .home-hero h1,
 .home-sub,
 .lesson-list,
@@ -91,8 +93,6 @@ body {
   align-content: start;
 }
 .lesson-card {
-  font: inherit;
-  text-align: left;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -100,7 +100,8 @@ body {
   border: 1px solid var(--line);
   border-radius: 14px;
   background: #fff;
-  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
   transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 .lesson-card:hover {
@@ -157,65 +158,186 @@ body {
   text-decoration: none;
 }
 
-/* ---------- Player ---------- */
-.player {
-  display: flex;
-  height: 100vh;
-}
-.lesson-panel {
-  width: 380px;
-  flex: 0 0 380px;
-  padding: 24px 26px;
-  border-right: 1px solid var(--line);
-  overflow-y: auto;
+/* ---------- Article page ---------- */
+.article-page {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
-.back-link {
-  font: inherit;
-  align-self: flex-start;
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+.masthead-link {
   font-size: 13px;
   font-weight: 600;
-  color: var(--muted);
-  background: none;
-  border: none;
-  padding: 0;
-  margin-bottom: 20px;
-  cursor: pointer;
-}
-.back-link:hover {
   color: var(--blue);
+  text-decoration: none;
 }
-.lesson-heading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 18px;
+.masthead-link:hover {
+  text-decoration: underline;
 }
-.lesson-heading h1 {
-  margin: 0;
-  font-size: 22px;
-  letter-spacing: -0.01em;
+
+.article {
+  flex: 1;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
 }
-.lesson-progress {
-  font-size: 12.5px;
+.article-head h1 {
+  margin: 0 0 8px;
+  font-size: clamp(30px, 5vw, 42px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+}
+.article-subtitle {
+  margin: 0 0 14px;
+  font-size: 18px;
+  line-height: 1.45;
   color: var(--muted);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
-.step-heading {
+.article-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 10px;
+  padding-bottom: 18px;
+  margin-bottom: 26px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5px;
+  color: var(--muted);
 }
-.lesson-panel h2 {
-  margin: 0;
-  font-size: 17px;
-  letter-spacing: -0.01em;
+
+.article-body {
+  font-size: 16.5px;
+  line-height: 1.7;
 }
+.article-body p {
+  margin: 0 0 18px;
+}
+.article-body h2 {
+  margin: 36px 0 14px;
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.article-body ul {
+  margin: 0 0 18px;
+  padding-left: 22px;
+}
+.article-body li {
+  margin-bottom: 8px;
+}
+.article-body code {
+  font-size: 0.92em;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+.article-cta {
+  text-align: center;
+  margin: 30px 0 18px;
+}
+.article-cta a {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--blue);
+  text-decoration: none;
+  padding: 12px 22px;
+  border-radius: 10px;
+  transition: background 0.15s;
+}
+.article-cta a:hover {
+  background: #275f97;
+}
+
+.article-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  max-width: 680px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 16px 24px 28px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--muted);
+}
+.article-footer a {
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ---------- Embedded Warp scenes ---------- */
+.embed {
+  margin: 26px 0;
+}
+/* On wide screens the scene breaks out of the text column a bit. */
+@media (min-width: 1020px) {
+  .embed {
+    margin-left: -120px;
+    margin-right: -120px;
+  }
+}
+.embed-stage {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--panel);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
+.embed-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+.embed-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.embed-placeholder-mark {
+  font-size: 40px;
+  color: var(--line);
+}
+.embed-caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.embed-caption a {
+  flex: 0 0 auto;
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.embed-caption a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Listen button ---------- */
 .listen-btn {
   flex: 0 0 auto;
   font: inherit;
@@ -238,131 +360,4 @@ body {
   color: var(--blue);
   border-color: var(--blue);
   background: rgba(45, 112, 179, 0.07);
-}
-.lesson-panel p {
-  margin: 0 0 12px;
-  font-size: 14.5px;
-  line-height: 1.6;
-}
-.try-this {
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: rgba(45, 112, 179, 0.07);
-  border: 1px solid rgba(45, 112, 179, 0.18);
-}
-
-.step-nav {
-  margin-top: auto;
-  padding-top: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.step-dots {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-}
-.step-dot {
-  width: 9px;
-  height: 9px;
-  padding: 0;
-  border-radius: 50%;
-  border: none;
-  background: var(--line);
-  cursor: pointer;
-}
-.step-dot.on {
-  background: var(--blue);
-}
-.step-btn {
-  font: inherit;
-  font-size: 13.5px;
-  font-weight: 600;
-  padding: 7px 15px;
-  border-radius: 8px;
-  cursor: pointer;
-  text-decoration: none;
-}
-.step-btn.primary {
-  background: var(--blue);
-  color: #fff;
-  border: none;
-}
-.step-btn.primary:hover {
-  background: #275f97;
-}
-.step-btn.ghost {
-  background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--line);
-}
-.step-btn.ghost:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.scene {
-  flex: 1;
-  position: relative;
-  min-width: 0;
-  background: var(--panel);
-}
-.scene-frame {
-  width: 100%;
-  height: 100%;
-  border: none;
-  display: block;
-}
-.scene-open {
-  position: absolute;
-  bottom: 14px;
-  right: 16px;
-  font-size: 12.5px;
-  font-weight: 600;
-  text-decoration: none;
-  color: var(--ink);
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 6px 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
-}
-.scene-open:hover {
-  border-color: var(--blue);
-  color: var(--blue);
-}
-.scene-cta {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--blue);
-  text-decoration: none;
-}
-.scene-cta-mark {
-  font-size: 44px;
-}
-
-@media (max-width: 760px) {
-  .player {
-    flex-direction: column;
-    height: auto;
-    min-height: 100vh;
-  }
-  .lesson-panel {
-    width: 100%;
-    flex: none;
-    border-right: none;
-    border-bottom: 1px solid var(--line);
-  }
-  .scene {
-    min-height: 65vh;
-  }
 }

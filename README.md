@@ -1,27 +1,31 @@
 # Warp Lessons
 
-Click-through, fully interactive lessons built on [Warp](https://warp.us.com):
-read a little, watch space move, then try it yourself in the sandbox.
+Interactive **articles** built on [Warp](https://warp.us.com): essay-style
+exposition with live, manipulable Warp scenes embedded in the prose —
+ending at the open sandbox.
 
-The eigenvectors lesson is the entry for the **non-video category of
+The eigenvectors article is the entry for the **non-video category of
 3Blue1Brown's Summer of Math Exposition 2026** (deadline Aug 15; no deploys
 during peer review Aug 16–30 — the entry URL must stay frozen).
 
-## How lessons work
+## How articles work
 
-A lesson step = a short piece of writing + a live Warp scene. Scenes load
-through Warp's own URL-hash state format (`warp.us.com/#s=…`) inside an
-iframe — so **authoring a step is just building the scene in Warp and
-copying the address bar**. No lesson engine to maintain; the sandbox is the
-renderer. See `src/lessons.ts`.
+Articles are MDX (`src/articles/*.mdx`): markdown prose with
+`<WarpEmbed state={…} caption="…" />` dropped wherever a scene belongs.
+Scenes load through Warp's own URL-hash state format (`warp.us.com/#s=…`) in
+a lazily-mounted iframe — **authoring a scene is just building it in Warp
+and copying the address bar** (constants live in `src/states.ts`). Embeds
+boot only as the reader scrolls near them.
 
-Current lessons: **Eigenvectors** (2D) and **The Cross Product** (3D), both
-drafts.
+Each article is its own static page with a clean, stable URL
+(`…/warp-lessons/eigenvectors/`). Adding an article = a new `.mdx` file, a
+stub `<slug>/index.html`, an entry module in `src/pages/`, and one line each
+in `vite.config.ts` and `src/articles/index.ts`.
 
-Each step also has spoken narration (the Listen button): a step with an
-`audio` URL plays that recording; otherwise the browser's built-in
-text-to-speech reads the step text. Recorded voice-over can be added
-per-step later without touching the player.
+Narration: the Listen button in the article header plays a recorded
+voice-over when `audioUrl` is passed to `ArticleShell`, else falls back to
+browser text-to-speech reading the article. Recordings can be added without
+touching the player.
 
 ## Getting started
 

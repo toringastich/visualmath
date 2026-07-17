@@ -1,0 +1,101 @@
+import WarpEmbed from "../WarpEmbed";
+import { EIGEN_RIDE, EIGEN_LINES, EIGEN_ON_LINE, WARP_URL } from "../states";
+
+{/* ============================================================too===========
+    YOUR STORY — everything down to the first <WarpEmbed> is yours to
+    rewrite in your own voice. The [bracketed] blocks are placeholders
+    sketching one possible arc: why you built Warp, then into the math.
+    ========================================================================= */}
+
+[YOUR STORY, ¶1 — The hook. Perhaps: the moment linear algebra stopped being
+arithmetic for you. A matrix was a wall of numbers, and then — through
+3Blue1Brown, through a Desmos 3D lecture, through teaching — it became a
+*motion*. Something that happens to space.]
+
+[YOUR STORY, ¶2 — Building Warp. You self-studied linear algebra before ever
+taking the course, and built the tool you wished existed: type a matrix,
+watch the plane move. What Desmos does for functions, for transformations.]
+
+[YOUR STORY, ¶3 — The turn. Of everything Warp can show, one idea benefits
+most from being *seen* instead of computed: eigenvectors. Textbooks define
+them in one line — Mv = λv — and that line hides everything. Let's look
+instead.]
+
+## A matrix moves every vector
+
+Here is a matrix, M, and what it does to the plane. The grid you see isn't
+decoration — it *is* space, and M is warping all of it. The vector v = (1, 0)
+rides along. Press play on the matrix row and watch where v lands.
+
+<WarpEmbed
+  state={EIGEN_RIDE}
+  caption="M warps the plane; v = (1, 0) rides the warp. Press ▶ on the matrix row."
+  height={460}
+/>
+
+Almost every vector gets knocked off its own line. v started pointing due
+east; it lands pointing somewhere new. Rotate the matrix's entries and the
+story repeats — direction in, *different* direction out. That's what a matrix
+does. It moves everything.
+
+Almost everything.
+
+## The vectors that refuse to turn
+
+Type `eigen(M)` and Warp draws two dashed lines through the origin. They look
+unremarkable. They are not: they are the only two lines in the entire plane
+that the warp leaves *in place*.
+
+<WarpEmbed
+  state={EIGEN_LINES}
+  caption="eigen(M) draws the invariant lines. Play the warp — the orange and purple vectors stretch but never turn."
+  height={460}
+/>
+
+A vector on one of those lines doesn't get turned when M applies — it only
+gets stretched, by a factor the readout calls λ. Play the animation and watch
+the orange and purple vectors: space swirls around them, and they simply…
+lengthen. Those are the **eigenvectors** of M, and the stretch factors λ are
+its **eigenvalues**.
+
+## See it with your own vector
+
+Don't take the dashed lines' word for it. Here v = (1, 1) sits exactly on an
+eigen-line, and the row u = M·v computes where it lands: (3, 3). Same
+direction. Three times the length. λ = 3, in the flesh.
+
+<WarpEmbed
+  state={EIGEN_ON_LINE}
+  caption="v = (1, 1) lies on an eigen-line, so M·v = (3, 3) — stretched by λ = 3, never turned."
+  height={460}
+/>
+
+Now nudge v off the line — edit it to (1, 0.8) — and watch u swing away from
+v's direction. Put it back and they re-align. The eigen-line is a knife edge,
+and you can feel it.
+
+That is the entire idea. *An eigenvector of M is a vector that M stretches
+but does not turn; the eigenvalue is the stretch.* Everything else — the
+characteristic polynomial, det(M − λI) = 0, the algebra you'll grind through
+on the exam — is the bookkeeping you do to *find* the vectors this article
+just showed you.
+
+## Now it's yours
+
+The sandbox below is the full version of Warp — the same tool every scene in
+this article ran on. Some experiments worth your time:
+
+- `eigen` of a **rotation** matrix: nothing survives a turn, so there are no
+  real eigenvectors at all. Warp reports the complex pair.
+- `eigen` of a **shear**: exactly one direction survives. Repeated eigenvalue,
+  one eigen-line.
+- `eigen` of the **identity**: everything survives. Every vector is an
+  eigenvector.
+
+<p className="article-cta">
+  <a href={WARP_URL}>Open the Warp sandbox →</a>
+</p>
+
+[YOUR CLOSER, optional — one paragraph bringing it back to the story: what
+seeing it first did for you when the formal course arrived, and an invitation
+to reach for the picture whenever the symbols go abstract.]

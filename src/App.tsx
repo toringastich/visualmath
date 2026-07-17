@@ -1,12 +1,7 @@
-import { useState } from "react";
-import { LESSONS, type Lesson } from "./lessons";
-import Player from "./Player";
+import { ARTICLES } from "./articles/index";
 
 export default function App() {
-  const [active, setActive] = useState<Lesson | null>(null);
-
-  if (active) return <Player lesson={active} onExit={() => setActive(null)} />;
-
+  const base = import.meta.env.BASE_URL;
   return (
     <div className="home">
       <header className="home-hero">
@@ -14,7 +9,7 @@ export default function App() {
           <span className="brand-mark">▦</span>
           <span className="brand-name">Warp Lessons</span>
         </div>
-        <h1>Interactive walkthroughs, built on Warp.</h1>
+        <h1>Interactive articles, built on Warp.</h1>
         <p className="home-sub">
           Read a little, watch space move, then try it yourself. Every scene
           is live — the same sandbox as{" "}
@@ -22,19 +17,17 @@ export default function App() {
         </p>
       </header>
       <main className="lesson-list">
-        {LESSONS.map((l) => (
-          <button key={l.slug} className="lesson-card" onClick={() => setActive(l)}>
+        {ARTICLES.map((a) => (
+          <a key={a.slug} className="lesson-card" href={base + a.slug + "/"}>
             <div className="lesson-card-top">
-              <span className="lesson-card-count">
-                {l.steps.length} steps
-              </span>
-              {l.status === "draft" && (
+              <span className="lesson-card-count">{a.date}</span>
+              {a.status === "draft" && (
                 <span className="lesson-card-draft">Draft</span>
               )}
             </div>
-            <h2>{l.title}</h2>
-            <p>{l.subtitle}</p>
-          </button>
+            <h2>{a.title}</h2>
+            <p>{a.subtitle}</p>
+          </a>
         ))}
       </main>
       <footer className="home-footer">
