@@ -1,0 +1,13 @@
+{
+  "name": "visualmath",
+  "private": true,
+  "version": "0.0.1",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w apps/landing",
+    "build": "npm run build -w apps/landing"
+  }
+}
