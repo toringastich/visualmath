@@ -26,6 +26,7 @@ const TOOLS: Tool[] = [
     name: "Warp Lessons",
     subject: "Guided walkthroughs",
     status: "building",
+    href: "https://toringastich.github.io/warp-lessons/",
     description:
       "Click-through, fully interactive lessons built on Warp — starting with eigenvectors. Read a little, watch the space move, then try it yourself in the sandbox. Summer of Math Exposition 2026 entry.",
   },
