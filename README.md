@@ -1,5 +1,7 @@
 # Warp Lessons
 
+**Live at [toringastich.github.io/warp-lessons/eigenvectors/](https://toringastich.github.io/warp-lessons/eigenvectors/)**
+
 Interactive **articles** built on [Warp](https://warp.us.com): essay-style
 exposition with live, manipulable Warp scenes embedded in the prose —
 ending at the open sandbox.
