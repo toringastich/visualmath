@@ -9,6 +9,13 @@ export interface ArticleMeta {
 
 export const ARTICLES: ArticleMeta[] = [
   {
+    slug: "determinant",
+    title: "The Determinant",
+    subtitle: "The one number that measures everything",
+    date: "Summer 2026",
+    status: "draft",
+  },
+  {
     slug: "eigenvectors",
     title: "Eigenvectors",
     subtitle: "The vectors that refuse to turn",

@@ -1,0 +1,163 @@
+import WarpEmbed from "../WarpEmbed";
+import {
+  DET_AREA,
+  DET_FLIP,
+  DET_VOLUME,
+  DET_COMPOSE,
+  DET_INVERT,
+  WARP_URL,
+} from "../states";
+
+{/* =========================================================================
+    YOUR STORY — everything down to the first "## The one number" heading is
+    yours to rewrite. The [bracketed] blocks sketch one arc: the hook, why you
+    built Warp, and the promise of the article. Keep it TIGHT — SoME's
+    Motivation criterion is judged in the first ~30 seconds, so the surprise
+    should land fast and the memoir should stay lean.
+    ========================================================================= */}
+
+[YOUR STORY, ¶1 — THE HOOK. Open on the surprise, not on "determinants are
+important." Something like: a 2×2 matrix is four numbers. From those four
+numbers you can compute a single fifth number — the determinant — and that one
+number quietly decides whether the matrix stretches space, flips it, flattens
+it, or can be undone at all. Four numbers in, one number out, and it knows
+everything. How?]
+
+[YOUR STORY, ¶2 — WHY YOU. Briefly: you self-taught linear algebra before ever
+sitting the course, and the determinant was the first place the formula
+(ad − bc) felt like a magic incantation — until you saw it. You built Warp so
+the seeing comes first. One or two sentences; let the math carry the rest.]
+
+[YOUR STORY, ¶3 — THE PROMISE. Tell the reader what they'll get: by the end,
+ad − bc won't be a formula they memorized but a number they can *see* — an
+area, a volume, an orientation, and the answer to "can I undo this?" Every
+picture below is live; they should drag the matrices as they read.]
+
+## The one number is an area
+
+Start in two dimensions. A matrix takes the humble unit square — one unit wide,
+one unit tall, area exactly 1 — and warps it into a parallelogram. Here is
+`M`, and the shaded patch is where the unit square lands. The row `det(M)`
+reads **6**.
+
+<WarpEmbed
+  state={DET_AREA}
+  caption="M = [[3, 1], [0, 2]] warps the unit square into a parallelogram of area 6 — and det(M) = 6."
+/>
+
+That is the whole secret, in one sentence: **the determinant is the factor by
+which the transformation scales area.** The unit square had area 1; its image
+has area 6; so `det(M) = 6`. Change an entry of `M` and watch the two numbers
+move together — the parallelogram's area and the determinant are never
+different, because they are the same thing.
+
+This already pays off the mysterious formula. For `M = [[a, b], [c, d]]`, the
+area of that parallelogram works out to `ad − bc`. The incantation you
+memorized was measuring a shape all along.
+
+## Drive it to zero, and straight past it
+
+If the determinant is an area, what would it mean for it to be *zero*? An area
+of zero is a shape with no interior — a shape that has been crushed flat.
+
+Here `M` has `det(M) = −1`. Press play and watch the transformation happen
+gradually. Halfway through, the entire grid thins to a single line: at that
+instant the determinant passes through zero, and all of two-dimensional space
+has been flattened onto one dimension. Then space *reopens* on the other side —
+mirror-reversed.
+
+<WarpEmbed
+  state={DET_FLIP}
+  caption="det(M) = −1. Press ▶: at the midpoint the grid collapses to a line (det = 0), then reopens flipped."
+/>
+
+So the sign of the determinant carries a second piece of information the area
+alone can't: **orientation.** A positive determinant keeps space oriented the
+way it started; a negative determinant turns it inside out, the way a
+reflection swaps left and right. Zero is the knife-edge between them — the
+moment space is squashed so hard it loses a dimension. The determinant's
+magnitude tells you *how much* area changed; its sign tells you *whether space
+got flipped* on the way.
+
+## In three dimensions, it's a volume
+
+Nothing about that story was special to the plane. Move to 3D and the unit
+square becomes the unit *cube*, and the determinant becomes the factor by
+which the transformation scales **volume**.
+
+<WarpEmbed
+  state={DET_VOLUME}
+  caption="A 3×3 matrix warps the unit cube into this parallelepiped. det(M) = 6 — its volume. Drag to orbit."
+/>
+
+Same idea, one dimension up: the cube of volume 1 lands as a slanted box — a
+parallelepiped — of volume 6, so `det(M) = 6`. Orbit around it. A determinant
+of zero here would mean the cube gets crushed flat into a plane, a line, or a
+point — volume gone. The determinant is the single number that measures "how
+much space" survives the transformation, in any dimension.
+
+## Why det(AB) = det(A) · det(B)
+
+Here is a fact that looks like it belongs to algebra, and turns out to belong
+to geometry. Do one transformation, then another. The first scales area (or
+volume) by its determinant; the second scales *that* by its own determinant.
+Scalings multiply. So the determinant of the combined transformation must be
+the product of the two determinants — no computation required, just the
+meaning of the word.
+
+<WarpEmbed
+  state={DET_COMPOSE}
+  caption="C = M·N. det(M) = 2, det(N) = 3, det(C) = 6. Press ▶ to apply N then M — area scales ×3, then ×2."
+  height={520}
+/>
+
+Watch it happen: `N` scales area by 3, then `M` scales that by 2, and the
+composite `C = M·N` scales area by 6. The identity `det(AB) = det(A)·det(B)` —
+which is a small chore to prove by grinding through the entries — is obvious
+the instant you read the determinant as an area factor. Two scalings in a row
+multiply. That's the whole proof.
+
+## The payoff: when can you undo a matrix?
+
+Now the question everything has been building toward. A transformation is
+*invertible* when you can undo it — when every landing spot came from exactly
+one starting point, so you can always find your way back.
+
+Watch what a determinant of zero does to that. Here `det(M) = 0`, and the grid
+has collapsed onto a single line. Every point on that line is the image of a
+whole line's worth of starting points — they've been piled on top of each
+other. The information about where things came from is *gone*. And the row
+`inv(M)` says exactly that:
+
+<WarpEmbed
+  state={DET_INVERT}
+  caption="det(M) = 0 flattens the plane onto a line — and inv(M) reports 'Not invertible (det = 0)'."
+/>
+
+There it is, the punchline the whole subject hinges on: **a matrix is
+invertible exactly when its determinant is not zero.** Not as a rule to
+memorize, but as something you just watched happen. Zero determinant means
+space got flattened, flattening destroys information, and destroyed
+information can't be recovered. One number — an area, a volume — told you
+whether the transformation could be undone before you tried.
+
+## Now it's yours
+
+Everything above ran on Warp, the same sandbox that opens below. Some things
+worth trying with a matrix of your own:
+
+- Find a matrix with `det(M) = 1` that is *not* the identity — a shear. It
+  moves every vector, yet changes no area at all.
+- Make `det(M)` negative and play the animation to feel the flip.
+- Type a `3×3` matrix in 3D and hunt for `det = 0` — the moment the cube
+  goes flat.
+
+<p className="article-cta">
+  <a href={WARP_URL}>Open the Warp sandbox →</a>
+</p>
+
+[YOUR CLOSER, optional — one paragraph landing the plane. Maybe: the
+determinant was never four-numbers-in-one-number-out by magic; it was an area
+the whole time, and once you can see the area, the formula, the sign, the
+product rule, and the invertibility test are all one idea wearing four hats.
+Tie back to why you build things you can see.]
