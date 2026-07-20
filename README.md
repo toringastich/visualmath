@@ -1,5 +1,7 @@
 # visualmath
 
+**Live at [toringastich.github.io/visualmath/](https://toringastich.github.io/visualmath/)**
+
 Free, interactive sandboxes for the undergrad math courses where intuition
 goes missing — type a mathematical object, watch it act on space. Everything
 runs client-side in the browser: no installs, no accounts, no backend.
