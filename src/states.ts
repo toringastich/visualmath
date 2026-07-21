@@ -44,9 +44,9 @@ export const DET_AREA =
 export const DET_FLIP =
   "eyJ2IjoxLCJtb2RlIjoiMmQiLCJkMiI6eyJyb3dzIjpbeyJrIjoibSIsIm4iOiJNIiwiYyI6WyIwIiwiMSIsIjEiLCIwIl19LHsiayI6ImUiLCJzIjoiZGV0KE0pIiwic2giOnRydWV9XSwiYWN0aXZlIjowfSwiZDMiOnsicm93cyI6W3siayI6ImUiLCJzIjoiIiwic2giOnRydWV9XSwiYWN0aXZlIjpudWxsfX0";
 
-/** 3D M = [[2,1,0],[0,1,0],[0,0,3]], det(M) = 6 — the parallelepiped's volume. */
+/** 3D M = [[2,1,0],[0,1,0],[0,1,1]], det(M) = 2 — the parallelepiped's volume. */
 export const DET_VOLUME =
-  "eyJ2IjoxLCJtb2RlIjoiM2QiLCJkMiI6eyJyb3dzIjpbeyJrIjoiZSIsInMiOiIiLCJzaCI6dHJ1ZX1dLCJhY3RpdmUiOm51bGx9LCJkMyI6eyJyb3dzIjpbeyJrIjoibSIsIm4iOiJNIiwiYyI6WyIyIiwiMSIsIjAiLCIwIiwiMSIsIjAiLCIwIiwiMCIsIjMiXX0seyJrIjoiZSIsInMiOiJkZXQoTSkiLCJzaCI6dHJ1ZX1dLCJhY3RpdmUiOjB9fQ";
+  "eyJ2IjoxLCJtb2RlIjoiM2QiLCJkMiI6eyJyb3dzIjpbeyJrIjoiZSIsInMiOiIiLCJzaCI6dHJ1ZX1dLCJhY3RpdmUiOm51bGx9LCJkMyI6eyJyb3dzIjpbeyJrIjoibSIsIm4iOiJNIiwiYyI6WyIyIiwiMSIsIjAiLCIwIiwiMSIsIjAiLCIwIiwiMSIsIjEiXX0seyJrIjoiZSIsInMiOiJkZXQoTSkiLCJzaCI6dHJ1ZX1dLCJhY3RpdmUiOjB9fQ";
 
 /** C = M·N with det(M)=2, det(N)=3, det(C)=6 — the multiplicative law, animated. */
 export const DET_COMPOSE =
@@ -55,3 +55,7 @@ export const DET_COMPOSE =
 /** M = [[2,1],[4,2]], det(M) = 0: space collapses to a line, inv(M) fails. */
 export const DET_INVERT =
   "eyJ2IjoxLCJtb2RlIjoiMmQiLCJkMiI6eyJyb3dzIjpbeyJrIjoibSIsIm4iOiJNIiwiYyI6WyIyIiwiMSIsIjQiLCIyIl19LHsiayI6ImUiLCJzIjoiZGV0KE0pIiwic2giOnRydWV9LHsiayI6ImUiLCJzIjoiaW52KE0pIiwic2giOnRydWV9XSwiYWN0aXZlIjowfSwiZDMiOnsicm93cyI6W3siayI6ImUiLCJzIjoiIiwic2giOnRydWV9XSwiYWN0aXZlIjpudWxsfX0";
+
+/** A blank sandbox — nothing pre-loaded, for open experimentation. */
+export const DET_BLANK =
+  "eyJ2IjoxLCJtb2RlIjoiMmQiLCJkMiI6eyJyb3dzIjpbeyJrIjoiZSIsInMiOiIiLCJzaCI6dHJ1ZX1dLCJhY3RpdmUiOm51bGx9LCJkMyI6eyJyb3dzIjpbeyJrIjoiZSIsInMiOiIiLCJzaCI6dHJ1ZX1dLCJhY3RpdmUiOm51bGx9fQ";

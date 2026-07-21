@@ -11,7 +11,7 @@ export const ARTICLES: ArticleMeta[] = [
   {
     slug: "determinant",
     title: "The Determinant",
-    subtitle: "The one number that measures everything",
+    subtitle: "The number that measures a matrix",
     date: "Summer 2026",
     status: "draft",
   },

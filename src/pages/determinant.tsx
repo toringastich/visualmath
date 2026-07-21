@@ -8,7 +8,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ArticleShell
       title="The Determinant"
-      subtitle="The one number that measures everything"
+      subtitle="The number that measures a matrix"
       date="Summer 2026"
     >
       <Article />

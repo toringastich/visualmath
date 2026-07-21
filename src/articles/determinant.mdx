@@ -5,33 +5,32 @@ import {
   DET_VOLUME,
   DET_COMPOSE,
   DET_INVERT,
+  DET_BLANK,
   WARP_URL,
 } from "../states";
 
-{/* =========================================================================
-    YOUR STORY — everything down to the first "## The one number" heading is
-    yours to rewrite. The [bracketed] blocks sketch one arc: the hook, why you
-    built Warp, and the promise of the article. Keep it TIGHT — SoME's
-    Motivation criterion is judged in the first ~30 seconds, so the surprise
-    should land fast and the memoir should stay lean.
-    ========================================================================= */}
+{/* Story + prose synced from the vault file "Determinant Lesson — Writing.md".
+    Edit there and ask to re-sync, or edit here directly. */}
 
-[YOUR STORY, ¶1 — THE HOOK. Open on the surprise, not on "determinants are
-important." Something like: a 2×2 matrix is four numbers. From those four
-numbers you can compute a single fifth number — the determinant — and that one
-number quietly decides whether the matrix stretches space, flips it, flattens
-it, or can be undone at all. Four numbers in, one number out, and it knows
-everything. How?]
+A 2×2 matrix is just four numbers. But it is also a linear transformation,
+where each column represents a vector that warps the gridlines of 2-D space.
+The determinant is just a fifth number, calculated using the four numbers in a
+2×2 matrix. This one number also has a very important visual component, and it
+tells you whether the linear transformation encoded by the matrix stretches
+space, flips it, flattens it, or can be undone at all. Four numbers in, one
+number out, and it knows everything. How?
 
-[YOUR STORY, ¶2 — WHY YOU. Briefly: you self-taught linear algebra before ever
-sitting the course, and the determinant was the first place the formula
-(ad − bc) felt like a magic incantation — until you saw it. You built Warp so
-the seeing comes first. One or two sentences; let the math carry the rest.]
+My name is Torin, and I just graduated from high school. In my senior year I
+took a calculus class where we used determinants mostly for symbol-pushing, as
+a means to an end. 3Blue1Brown's videos taught me that determinants are much
+more than a formula, and I wanted to bring those visuals to a sandbox
+environment like Desmos where you can actually "play around" with visual math
+rather than just watching. That's why I built Warp, and this lesson to show how
+to learn using it.
 
-[YOUR STORY, ¶3 — THE PROMISE. Tell the reader what they'll get: by the end,
-ad − bc won't be a formula they memorized but a number they can *see* — an
-area, a volume, an orientation, and the answer to "can I undo this?" Every
-picture below is live; they should drag the matrices as they read.]
+By the end of this lesson you will not have memorized any formulas, but you
+will have a very strong sense of what a determinant is. You'll get there mainly
+by seeing and experimenting, which is exactly how I self-taught linear algebra.
 
 ## The one number is an area
 
@@ -45,39 +44,36 @@ reads **6**.
   caption="M = [[3, 1], [0, 2]] warps the unit square into a parallelogram of area 6 — and det(M) = 6."
 />
 
-That is the whole secret, in one sentence: **the determinant is the factor by
-which the transformation scales area.** The unit square had area 1; its image
-has area 6; so `det(M) = 6`. Change an entry of `M` and watch the two numbers
-move together — the parallelogram's area and the determinant are never
-different, because they are the same thing.
-
-This already pays off the mysterious formula. For `M = [[a, b], [c, d]]`, the
-area of that parallelogram works out to `ad − bc`. The incantation you
-memorized was measuring a shape all along.
+**The determinant is the factor by which the transformation scales area.** The
+unit square had area 1; its image has area 6; so `det(M) = 6`. Now, change an
+entry of `M` and watch it warp space — you'll notice the parallelogram's area
+and the determinant are always the same. You're welcome to keep experimenting
+here, or you can open the link if you'd like more space.
 
 ## Drive it to zero, and straight past it
 
 If the determinant is an area, what would it mean for it to be *zero*? An area
 of zero is a shape with no interior — a shape that has been crushed flat.
 
-Here `M` has `det(M) = −1`. Press play and watch the transformation happen
-gradually. Halfway through, the entire grid thins to a single line: at that
+Here `M` has `det(M) = −1`. Watch the transformation happen gradually. You can
+hit the play button again, or pick up the slider from the right and scrub to
+any point. Halfway through, the entire grid thins to a single line: at that
 instant the determinant passes through zero, and all of two-dimensional space
 has been flattened onto one dimension. Then space *reopens* on the other side —
 mirror-reversed.
 
 <WarpEmbed
   state={DET_FLIP}
-  caption="det(M) = −1. Press ▶: at the midpoint the grid collapses to a line (det = 0), then reopens flipped."
+  caption="det(M) = −1. Press ▶: at the midpoint the grid collapses to a line, then reopens flipped."
 />
 
 So the sign of the determinant carries a second piece of information the area
 alone can't: **orientation.** A positive determinant keeps space oriented the
 way it started; a negative determinant turns it inside out, the way a
-reflection swaps left and right. Zero is the knife-edge between them — the
-moment space is squashed so hard it loses a dimension. The determinant's
-magnitude tells you *how much* area changed; its sign tells you *whether space
-got flipped* on the way.
+reflection swaps left and right. A determinant of zero is the instant between
+them, the moment space is squashed so hard it loses a dimension. The
+determinant's magnitude tells you *how much* area changed; its sign tells you
+*whether space got flipped* on the way.
 
 ## In three dimensions, it's a volume
 
@@ -87,14 +83,19 @@ which the transformation scales **volume**.
 
 <WarpEmbed
   state={DET_VOLUME}
-  caption="A 3×3 matrix warps the unit cube into this parallelepiped. det(M) = 6 — its volume. Drag to orbit."
+  caption="A 3×3 matrix warps the unit cube into this parallelepiped. det(M) = 2 — its volume. Drag to orbit."
 />
 
 Same idea, one dimension up: the cube of volume 1 lands as a slanted box — a
-parallelepiped — of volume 6, so `det(M) = 6`. Orbit around it. A determinant
-of zero here would mean the cube gets crushed flat into a plane, a line, or a
-point — volume gone. The determinant is the single number that measures "how
-much space" survives the transformation, in any dimension.
+parallelepiped — of volume 2, so `det(M) = 2`. Drag your cursor to orbit
+around it. A determinant of zero here would mean the cube gets crushed flat
+into a plane, a line, or a point — volume gone. The determinant is the single
+number that measures "how much space" survives the transformation, in any
+dimension.
+
+Now you try. Just change the numbers in the matrix and hit the play button to
+see the animation. Watch how the slanted box and its volume, the determinant,
+are affected.
 
 ## Why det(AB) = det(A) · det(B)
 
@@ -102,12 +103,12 @@ Here is a fact that looks like it belongs to algebra, and turns out to belong
 to geometry. Do one transformation, then another. The first scales area (or
 volume) by its determinant; the second scales *that* by its own determinant.
 Scalings multiply. So the determinant of the combined transformation must be
-the product of the two determinants — no computation required, just the
-meaning of the word.
+the product of the two determinants. Mathematicians can prove that with lots
+and lots of calculations, or you can see it proven visually right here on Warp.
 
 <WarpEmbed
   state={DET_COMPOSE}
-  caption="C = M·N. det(M) = 2, det(N) = 3, det(C) = 6. Press ▶ to apply N then M — area scales ×3, then ×2."
+  caption="C = M·N. det(M) = 2, det(N) = 3, det(C) = 6. Press the circle next to N, and watch. Do the same for M. You'll see area scale ×3, then ×2."
   height={520}
 />
 
@@ -116,6 +117,10 @@ composite `C = M·N` scales area by 6. The identity `det(AB) = det(A)·det(B)` �
 which is a small chore to prove by grinding through the entries — is obvious
 the instant you read the determinant as an area factor. Two scalings in a row
 multiply. That's the whole proof.
+
+If you're still wary, try it with different numbers and watch each animation.
+If you're feeling extra ambitious, hit the "plus" button to add another matrix.
+Add it into the `C = M·N` equation and watch three matrices in a row.
 
 ## The payoff: when can you undo a matrix?
 
@@ -135,16 +140,16 @@ other. The information about where things came from is *gone*. And the row
 />
 
 There it is, the punchline the whole subject hinges on: **a matrix is
-invertible exactly when its determinant is not zero.** Not as a rule to
-memorize, but as something you just watched happen. Zero determinant means
-space got flattened, flattening destroys information, and destroyed
-information can't be recovered. One number — an area, a volume — told you
-whether the transformation could be undone before you tried.
+invertible when its determinant is not zero.** That isn't a rule to memorize,
+rather something you just watched happen. Zero determinant means space got
+flattened, flattening destroys information, and destroyed information can't be
+recovered. One number — an area, a volume — told you whether the transformation
+could be undone before you tried.
 
 ## Now it's yours
 
-Everything above ran on Warp, the same sandbox that opens below. Some things
-worth trying with a matrix of your own:
+Everything above ran on Warp — and here is a blank one, yours to experiment in.
+Type a matrix, add a `det(M)` row, and play. Some things worth trying:
 
 - Find a matrix with `det(M) = 1` that is *not* the identity — a shear. It
   moves every vector, yet changes no area at all.
@@ -152,8 +157,14 @@ worth trying with a matrix of your own:
 - Type a `3×3` matrix in 3D and hunt for `det = 0` — the moment the cube
   goes flat.
 
+<WarpEmbed
+  state={DET_BLANK}
+  caption="A blank sandbox — everything from this article works here. Press + to add a matrix."
+  height={560}
+/>
+
 <p className="article-cta">
-  <a href={WARP_URL}>Open the Warp sandbox →</a>
+  <a href={WARP_URL}>Open the full sandbox →</a>
 </p>
 
 [YOUR CLOSER, optional — one paragraph landing the plane. Maybe: the
