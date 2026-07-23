@@ -5,6 +5,11 @@ import { WARP_URL } from "./states";
  * A live Warp scene embedded in article prose. Loads lazily — the iframe
  * mounts only as the reader approaches it, so an article with several
  * embeds doesn't boot several sandboxes up front.
+ *
+ * Once the scene is fully in view, it auto-plays its animation once, so the
+ * embed reads as live rather than as a static picture. This is a handshake:
+ * Warp posts `warp:ready` when it has mounted; we post `warp:autoplay` back
+ * as soon as it's both ready and fully visible.
  */
 export default function WarpEmbed({
   state,
@@ -21,8 +26,10 @@ export default function WarpEmbed({
   tutorial?: boolean;
 }) {
   const ref = useRef<HTMLElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [visible, setVisible] = useState(false);
 
+  // Lazy mount: bring the iframe in a little before it enters the viewport.
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -39,12 +46,62 @@ export default function WarpEmbed({
     return () => obs.disconnect();
   }, []);
 
+  // Auto-play once the scene is fully on screen. `ready` (Warp mounted) and
+  // `armed` (fully visible) can arrive in either order; play when both hold.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let ready = false;
+    let armed = false;
+    let played = false;
+
+    const tryPlay = () => {
+      if (played || !ready || !armed) return;
+      played = true;
+      iframeRef.current?.contentWindow?.postMessage("warp:autoplay", WARP_URL);
+    };
+
+    const onMessage = (e: MessageEvent) => {
+      if (e.origin === WARP_URL && e.data === "warp:ready") {
+        ready = true;
+        tryPlay();
+      }
+    };
+    window.addEventListener("message", onMessage);
+
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        const rb = entry.rootBounds;
+        if (!rb) return;
+        // Fire when the whole embed is visible; for an embed taller than the
+        // viewport (small screens), a solid majority counts as "fully seen".
+        const need = entry.boundingClientRect.height > rb.height ? 0.5 : 0.9;
+        if (entry.intersectionRatio >= need) {
+          armed = true;
+          tryPlay();
+        }
+      },
+      { threshold: [0.5, 0.9, 1] },
+    );
+    obs.observe(el);
+
+    return () => {
+      window.removeEventListener("message", onMessage);
+      obs.disconnect();
+    };
+  }, []);
+
   const url = `${WARP_URL}/${tutorial ? "?tutorial=1" : ""}#s=${state}`;
   return (
     <figure className="embed" ref={ref}>
       <div className="embed-stage" style={{ height }}>
         {visible ? (
-          <iframe className="embed-frame" src={url} title={caption ?? "Warp scene"} />
+          <iframe
+            ref={iframeRef}
+            className="embed-frame"
+            src={url}
+            title={caption ?? "Warp scene"}
+          />
         ) : (
           <div className="embed-placeholder">
             <span className="embed-placeholder-mark">▦</span>

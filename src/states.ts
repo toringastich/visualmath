@@ -44,9 +44,9 @@ export const DET_AREA =
 export const DET_FLIP =
   "eyJ2IjoxLCJtb2RlIjoiMmQiLCJkMiI6eyJyb3dzIjpbeyJrIjoibSIsIm4iOiJNIiwiYyI6WyIwIiwiMSIsIjEiLCIwIl19LHsiayI6ImUiLCJzIjoiZGV0KE0pIiwic2giOnRydWV9XSwiYWN0aXZlIjowfSwiZDMiOnsicm93cyI6W3siayI6ImUiLCJzIjoiIiwic2giOnRydWV9XSwiYWN0aXZlIjpudWxsfX0";
 
-/** 3D M = [[2,1,0],[0,1,0],[0,1,1]], det(M) = 2 — the parallelepiped's volume. */
+/** 3D M = [[2,1,0],[0,1,1],[0,0,1]], det(M) = 2 — an upper-triangular slanted box. */
 export const DET_VOLUME =
-  "eyJ2IjoxLCJtb2RlIjoiM2QiLCJkMiI6eyJyb3dzIjpbeyJrIjoiZSIsInMiOiIiLCJzaCI6dHJ1ZX1dLCJhY3RpdmUiOm51bGx9LCJkMyI6eyJyb3dzIjpbeyJrIjoibSIsIm4iOiJNIiwiYyI6WyIyIiwiMSIsIjAiLCIwIiwiMSIsIjAiLCIwIiwiMSIsIjEiXX0seyJrIjoiZSIsInMiOiJkZXQoTSkiLCJzaCI6dHJ1ZX1dLCJhY3RpdmUiOjB9fQ";
+  "eyJ2IjoxLCJtb2RlIjoiM2QiLCJkMiI6eyJyb3dzIjpbeyJrIjoiZSIsInMiOiIiLCJzaCI6dHJ1ZX1dLCJhY3RpdmUiOm51bGx9LCJkMyI6eyJyb3dzIjpbeyJrIjoibSIsIm4iOiJNIiwiYyI6WyIyIiwiMSIsIjAiLCIwIiwiMSIsIjEiLCIwIiwiMCIsIjEiXX0seyJrIjoiZSIsInMiOiJkZXQoTSkiLCJzaCI6dHJ1ZX1dLCJhY3RpdmUiOjB9fQ";
 
 /** C = M·N with det(M)=2, det(N)=3, det(C)=6 — the multiplicative law, animated. */
 export const DET_COMPOSE =
