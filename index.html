@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visual Math — tools for seeing what math does</title>
+    <meta
+      name="description"
+      content="Free, interactive sandboxes for the math courses where intuition goes missing. Type an object, watch it act on space — in your browser, no installs."
+    />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>▦</text></svg>" />
+
+    <!-- Google Analytics (GA4). Skipped when embedded in an iframe, so Warp
+         scenes embedded in lessons don't inflate pageviews; skipped on
+         localhost so dev work never pollutes the numbers. -->
+    <script>
+      if (window.self === window.top && location.hostname !== "localhost") {
+        var s = document.createElement("script");
+        s.async = true;
+        s.src = "https://www.googletagmanager.com/gtag/js?id=G-KSXRQBEMD9";
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag("js", new Date());
+        gtag("config", "G-KSXRQBEMD9");
+      }
+    </script>
+    <script type="module" crossorigin src="/visualmath/assets/index-Dwp503Fv.js"></script>
+    <link rel="stylesheet" crossorigin href="/visualmath/assets/index-Co1gRz46.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
