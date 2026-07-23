@@ -10,12 +10,15 @@ export default function WarpEmbed({
   state,
   caption,
   height = 460,
+  tutorial = false,
 }: {
   /** Warp share-link payload (the part after `#s=`). */
   state: string;
   /** One-line caption; shows under the scene with an open-in-Warp link. */
   caption?: string;
   height?: number;
+  /** Keep the Tutorial button in this embed (e.g. the closing sandbox). */
+  tutorial?: boolean;
 }) {
   const ref = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
@@ -36,7 +39,7 @@ export default function WarpEmbed({
     return () => obs.disconnect();
   }, []);
 
-  const url = `${WARP_URL}/#s=${state}`;
+  const url = `${WARP_URL}/${tutorial ? "?tutorial=1" : ""}#s=${state}`;
   return (
     <figure className="embed" ref={ref}>
       <div className="embed-stage" style={{ height }}>
