@@ -178,7 +178,16 @@ export default function TransformCanvas3D({
     // Start far enough back that the whole ±AXIS_EXTENT frame is visible with
     // room to spare — opening 3D should read immediately as "now you're in xyz
     // space". Distance ~= AXIS_EXTENT / tan(fov/2) along the original heading.
-    camera.position.set(8.4, -12.0, 6.3);
+    // A lesson embed can frame its subject closer with ?zoom=<factor>, where
+    // the factor multiplies this default distance.
+    const zoomParam = Number(
+      new URLSearchParams(window.location.search).get("zoom"),
+    );
+    const camScale =
+      Number.isFinite(zoomParam) && zoomParam > 0
+        ? Math.min(2, Math.max(0.3, zoomParam))
+        : 1;
+    camera.position.set(8.4 * camScale, -12.0 * camScale, 6.3 * camScale);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0.4, 0.4, 0.5);
