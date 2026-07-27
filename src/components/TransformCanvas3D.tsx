@@ -160,7 +160,12 @@ export default function TransformCanvas3D({
 
   useEffect(() => {
     const container = containerRef.current!;
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    // preserveDrawingBuffer keeps the frame readable after compositing, so
+    // right-click-save and canvas captures of the 3D view work.
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      preserveDrawingBuffer: true,
+    });
     renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
 
@@ -170,7 +175,10 @@ export default function TransformCanvas3D({
     // z is up, like Desmos 3D (and 3b1b's 3D chapters).
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 400);
     camera.up.set(0, 0, 1);
-    camera.position.set(3.2, -4.6, 2.4);
+    // Start far enough back that the whole ±AXIS_EXTENT frame is visible with
+    // room to spare — opening 3D should read immediately as "now you're in xyz
+    // space". Distance ~= AXIS_EXTENT / tan(fov/2) along the original heading.
+    camera.position.set(8.4, -12.0, 6.3);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0.4, 0.4, 0.5);
