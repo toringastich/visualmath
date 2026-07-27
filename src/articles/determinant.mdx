@@ -82,7 +82,9 @@ None of that was special to the flat plane. Step up to three dimensions and the
 unit square becomes the unit *cube*, and the determinant becomes the factor by
 which the transformation scales **volume**.
 
-<WarpEmbed state={DET_VOLUME} height={520} zoom={0.6} />
+{/* No `zoom` override: the default wide framing shows the xyz axes, which is
+    the point of the reader's first 3D scene. */}
+<WarpEmbed state={DET_VOLUME} height={520} />
 
 Drag inside the panel to orbit the scene. The cube of volume 1 has landed as a
 slanted box (called a parallelepiped) and its volume is exactly what `det(M)`
