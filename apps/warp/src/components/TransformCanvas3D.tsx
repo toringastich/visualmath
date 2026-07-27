@@ -175,7 +175,9 @@ export default function TransformCanvas3D({
     // z is up, like Desmos 3D (and 3b1b's 3D chapters).
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 400);
     camera.up.set(0, 0, 1);
-    camera.position.set(3.2, -4.6, 2.4);
+    // Start well back so all three axes (and their labels) are in frame — the
+    // point of opening 3D is seeing that you're now working in xyz space.
+    camera.position.set(5.4, -7.8, 4.1);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0.4, 0.4, 0.5);

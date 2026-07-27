@@ -96,6 +96,7 @@ export default function TransformCanvas({
   const projTRef = useRef<number>(projT);
   const sizeRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
   const dragRef = useRef<{ x: number; y: number } | null>(null);
+  const fittedRef = useRef(false);
 
   warpRef.current = warp;
   drawablesRef.current = drawables;
@@ -268,6 +269,34 @@ export default function TransformCanvas({
       }
       ctx.globalAlpha = 1;
 
+      // As the grid families fade (|det| -> 0), space is collapsing onto the
+      // column space — a single line. Fade that line in as the grid goes, so
+      // the end of the animation shows where all of space landed instead of
+      // an empty canvas.
+      const collapse = 1 - Math.max(alphaV, alphaH);
+      if (collapse > 0.003) {
+        const dir = lenI >= lenJ ? { x: M[0], y: M[2] } : { x: M[1], y: M[3] };
+        const dLen = Math.hypot(dir.x, dir.y);
+        if (dLen > 1e-9) {
+          // Reach past both corners of the viewport along the image direction.
+          const far =
+            (Math.abs(visMaxX - visMinX) + Math.abs(visMaxY - visMinY)) * 2;
+          const ux = (dir.x / dLen) * far;
+          const uy = (dir.y / dLen) * far;
+          const a = toScreen({ x: -ux, y: -uy });
+          const b = toScreen({ x: ux, y: uy });
+          ctx.save();
+          ctx.globalAlpha = collapse;
+          ctx.strokeStyle = COLORS.grid;
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
       // Unit square -> parallelogram for the active matrix.
       if (activeRef.current) {
         const o = toScreen(apply(M, { x: 0, y: 0 }));
@@ -410,6 +439,18 @@ export default function TransformCanvas({
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
       sizeRef.current = { w: rect.width, h: rect.height };
+      // On the first real measurement, pick a starting zoom that fits a
+      // comfortable world range in the shorter axis. A full window lands near
+      // the historical 80 px/unit; a short pane (a lesson embed) starts zoomed
+      // out instead of cropping the scene.
+      if (!fittedRef.current && rect.width > 0 && rect.height > 0) {
+        fittedRef.current = true;
+        const SPAN = 11; // world units across the shorter axis
+        viewRef.current.scale = Math.max(
+          24,
+          Math.min(90, Math.min(rect.width, rect.height) / SPAN),
+        );
+      }
       canvas.width = Math.round(rect.width * dpr);
       canvas.height = Math.round(rect.height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
