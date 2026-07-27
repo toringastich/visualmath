@@ -147,6 +147,23 @@ export function initTelemetry(): void {
   }
 }
 
+const fired = new Set<string>();
+
+/**
+ * A milestone: the first time this visit does something, and never again.
+ *
+ * Activation events answer "how far did people get", which is a question
+ * about visits, not about clicks — someone who plays a warp thirty times is
+ * one activated visitor. Collapsing that here rather than in reporting also
+ * keeps the funnel's cost flat: a handful of events per session, no matter
+ * how long or how enthusiastically someone plays.
+ */
+export function trackOnce(name: string, params: EventParams = {}): void {
+  if (fired.has(name)) return;
+  fired.add(name);
+  track(name, params);
+}
+
 /** Trim to what GA4 will actually accept, dropping empties along the way. */
 function clean(params: EventParams): EventParams {
   const out: EventParams = {};

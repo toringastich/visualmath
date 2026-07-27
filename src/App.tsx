@@ -55,6 +55,7 @@ import {
   type RowResult,
 } from "./rows";
 import { fmt, valueToText } from "./format";
+import { trackOnce } from "./analytics";
 import { useStickyErrors } from "./useStickyErrors";
 import {
   encodeState,
@@ -206,7 +207,10 @@ export default function App() {
   const doc3 = useUndoableDoc(INITIAL.d3);
   const changeMode = (m: Mode) => {
     setMode(m);
-    if (m === "3d") setSeen3d(true);
+    if (m === "3d") {
+      setSeen3d(true);
+      trackOnce("mode_3d_opened");
+    }
   };
 
   const encode = () =>
@@ -333,6 +337,7 @@ export default function App() {
       // storage unavailable
     }
     navigator.clipboard?.writeText(window.location.href);
+    trackOnce("share_copied", { warp_mode: mode });
   };
 
   const docProps = (doc: ReturnType<typeof useUndoableDoc>) => ({
@@ -838,6 +843,10 @@ function Warp2D({
     );
 
   const setMatrixCell = (id: RowId, index: number, value: string) => {
+    // Typing into a matrix cell is the first thing a visitor does that the
+    // tour can't have done for them — the seeded demo scene writes rows
+    // directly, so this only ever fires for a real keystroke.
+    trackOnce("first_matrix_entered", { warp_mode: "2d" });
     setRows((prev) =>
       prev.map((r) => {
         if (r.id !== id || r.kind !== "matrix") return r;
@@ -908,10 +917,15 @@ function Warp2D({
     });
   };
 
-  const playWarp = (id: RowId) => {
+  const startWarp = (id: RowId) => {
     setActiveId(id);
     if (tRef.current >= 1) setT(0);
     setPlaying(true);
+  };
+  /** The play button. Watching space warp is the moment Warp lands. */
+  const playWarp = (id: RowId) => {
+    trackOnce("first_warp_played", { warp_mode: "2d" });
+    startWarp(id);
   };
   const scrubWarp = (id: RowId, value: number) => {
     setActiveId(id);
@@ -923,9 +937,11 @@ function Warp2D({
   // from the host page — which fires once the embed is fully scrolled into
   // view, so the scene reads as live rather than static. The ref keeps the
   // one-time message listener pointed at the current active warp.
+  // startWarp, not playWarp: the host page scrolled the scene into view, the
+  // visitor didn't press anything. Counting it would inflate the funnel.
   const autoplayRef = useRef(() => {});
   autoplayRef.current = () => {
-    if (activeId) playWarp(activeId);
+    if (activeId) startWarp(activeId);
   };
   useEffect(() => {
     if (!EMBEDDED) return;

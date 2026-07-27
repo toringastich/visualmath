@@ -12,6 +12,7 @@ import TransformCanvas3D, {
 import ExpressionList from "./components/ExpressionList";
 import SidebarResizer from "./components/SidebarResizer";
 import { FEEDBACK_URL } from "./config";
+import { trackOnce } from "./analytics";
 import { useStickyErrors } from "./useStickyErrors";
 import { apply3, IDENTITY3, lerp3, type Mat3 } from "./lib/matrix3";
 import {
@@ -353,6 +354,7 @@ export default function Warp3D({
     );
 
   const setCell = (id: RowId, index: number, value: string, kind: "matrix" | "vector") => {
+    if (kind === "matrix") trackOnce("first_matrix_entered", { warp_mode: "3d" });
     setRows((prev) =>
       prev.map((r) => {
         if (r.id !== id || r.kind !== kind) return r;
@@ -402,10 +404,15 @@ export default function Warp3D({
     });
   };
 
-  const playWarp = (id: RowId) => {
+  const startWarp = (id: RowId) => {
     setActiveId(id);
     if (tRef.current >= 1) setT(0);
     setPlaying(true);
+  };
+  /** The play button, as distinct from an embed autoplaying itself below. */
+  const playWarp = (id: RowId) => {
+    trackOnce("first_warp_played", { warp_mode: "3d" });
+    startWarp(id);
   };
   const scrubWarp = (id: RowId, value: number) => {
     setActiveId(id);
@@ -416,7 +423,7 @@ export default function Warp3D({
   // Embedded scenes auto-play when the host page reports they're in view.
   const autoplayRef = useRef(() => {});
   autoplayRef.current = () => {
-    if (activeId) playWarp(activeId);
+    if (activeId) startWarp(activeId);
   };
   useEffect(() => {
     if (!EMBEDDED) return;
