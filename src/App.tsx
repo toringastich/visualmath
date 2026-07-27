@@ -55,6 +55,7 @@ import {
   type RowResult,
 } from "./rows";
 import { fmt, valueToText } from "./format";
+import { useStickyErrors } from "./useStickyErrors";
 import {
   encodeState,
   loadInitialState,
@@ -750,6 +751,8 @@ function Warp2D({
       projRows,
     };
   }, [rows, activeId]);
+
+  useStickyErrors("2d", rows, scene.results);
 
   // --- The active row (matrix or matrix-valued expression) drives the warp.
   // --- Compositions animate stage by stage: t sweeps all stages in order. ----

@@ -12,6 +12,7 @@ import TransformCanvas3D, {
 import ExpressionList from "./components/ExpressionList";
 import SidebarResizer from "./components/SidebarResizer";
 import { FEEDBACK_URL } from "./config";
+import { useStickyErrors } from "./useStickyErrors";
 import { apply3, IDENTITY3, lerp3, type Mat3 } from "./lib/matrix3";
 import {
   evaluate,
@@ -275,6 +276,8 @@ export default function Warp3D({
 
     return { drawables, results, colorOf, targetOf, warpables, sliders };
   }, [rows, activeId]);
+
+  useStickyErrors("3d", rows, scene.results);
 
   const activeTarget = useMemo(
     () => (activeId ? scene.targetOf.get(activeId) ?? null : null),
