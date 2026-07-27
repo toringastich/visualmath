@@ -16,6 +16,7 @@ export default function WarpEmbed({
   caption,
   height = 460,
   tutorial = false,
+  zoom,
 }: {
   /** Warp share-link payload (the part after `#s=`). */
   state: string;
@@ -24,6 +25,12 @@ export default function WarpEmbed({
   height?: number;
   /** Keep the Tutorial button in this embed (e.g. the closing sandbox). */
   tutorial?: boolean;
+  /**
+   * 3D only: multiplier on the default camera distance. The sandbox opens wide
+   * enough to show the whole xyz frame; an embed teaching one shape wants to
+   * sit closer (e.g. 0.6).
+   */
+  zoom?: number;
 }) {
   const ref = useRef<HTMLElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -91,7 +98,11 @@ export default function WarpEmbed({
     };
   }, []);
 
-  const url = `${WARP_URL}/${tutorial ? "?tutorial=1" : ""}#s=${state}`;
+  const params = new URLSearchParams();
+  if (tutorial) params.set("tutorial", "1");
+  if (zoom) params.set("zoom", String(zoom));
+  const qs = params.toString();
+  const url = `${WARP_URL}/${qs ? `?${qs}` : ""}#s=${state}`;
   return (
     <figure className="embed" ref={ref}>
       <div className="embed-stage" style={{ height }}>
