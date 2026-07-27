@@ -175,9 +175,19 @@ export default function TransformCanvas3D({
     // z is up, like Desmos 3D (and 3b1b's 3D chapters).
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 400);
     camera.up.set(0, 0, 1);
-    // Start well back so all three axes (and their labels) are in frame — the
-    // point of opening 3D is seeing that you're now working in xyz space.
-    camera.position.set(5.4, -7.8, 4.1);
+    // Start far enough back that the whole ±AXIS_EXTENT frame is visible with
+    // room to spare — opening 3D should read immediately as "now you're in xyz
+    // space". Distance ~= AXIS_EXTENT / tan(fov/2) along the original heading.
+    // A lesson embed can frame its subject closer with ?zoom=<factor>, where
+    // the factor multiplies this default distance.
+    const zoomParam = Number(
+      new URLSearchParams(window.location.search).get("zoom"),
+    );
+    const camScale =
+      Number.isFinite(zoomParam) && zoomParam > 0
+        ? Math.min(2, Math.max(0.3, zoomParam))
+        : 1;
+    camera.position.set(8.4 * camScale, -12.0 * camScale, 6.3 * camScale);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0.4, 0.4, 0.5);
