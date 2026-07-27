@@ -40,7 +40,9 @@ const COLORS3 = {
   cube: 0x78a05a, // same green as the 2D unit parallelogram
 };
 
-const AXIS_EXTENT = 5.5; // just past the ±4 lattice, Desmos-style
+// The axes stay long (they're the "you're in xyz space" cue) while the warped
+// lattice below stays compact around the unit cube it contextualizes.
+const AXIS_EXTENT = 5.5;
 
 function toV(v: Vec3): THREE.Vector3 {
   return new THREE.Vector3(v.x, v.y, v.z);
@@ -229,7 +231,7 @@ export default function TransformCanvas3D({
         // Warped lattice. A linear map keeps lines straight, so each lattice
         // line is just a segment between its two warped endpoints. Rendered
         // with LineSegments2 so the lines have a real pixel width.
-        const L = 4;
+        const L = 2;
         const latticePos: number[] = [];
         const seg = (a: Vec3, b: Vec3) => {
           const wa = apply3(M, a);
