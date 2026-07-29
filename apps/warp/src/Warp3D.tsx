@@ -12,6 +12,8 @@ import TransformCanvas3D, {
 import ExpressionList from "./components/ExpressionList";
 import SidebarResizer from "./components/SidebarResizer";
 import { FEEDBACK_URL } from "./config";
+import { trackOnce } from "./analytics";
+import { useStickyErrors } from "./useStickyErrors";
 import { apply3, IDENTITY3, lerp3, type Mat3 } from "@vm/engine/matrix3";
 import {
   evaluate,
@@ -276,6 +278,8 @@ export default function Warp3D({
     return { drawables, results, colorOf, targetOf, warpables, sliders };
   }, [rows, activeId]);
 
+  useStickyErrors("3d", rows, scene.results);
+
   const activeTarget = useMemo(
     () => (activeId ? scene.targetOf.get(activeId) ?? null : null),
     [scene, activeId],
@@ -350,6 +354,7 @@ export default function Warp3D({
     );
 
   const setCell = (id: RowId, index: number, value: string, kind: "matrix" | "vector") => {
+    if (kind === "matrix") trackOnce("first_matrix_entered", { warp_mode: "3d" });
     setRows((prev) =>
       prev.map((r) => {
         if (r.id !== id || r.kind !== kind) return r;
@@ -388,6 +393,16 @@ export default function Warp3D({
     }
   };
 
+  /** Move a row to a new slot (see the 2D sandbox for the naming caveat). */
+  const reorderRows = (from: number, to: number) =>
+    setRows((prev) => {
+      if (from < 0 || from >= prev.length) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to > from ? to - 1 : to, 0, moved);
+      return next;
+    });
+
   const deleteRow = (id: RowId) => {
     setRows((prev) => {
       const next = prev.filter((r) => r.id !== id);
@@ -399,10 +414,15 @@ export default function Warp3D({
     });
   };
 
-  const playWarp = (id: RowId) => {
+  const startWarp = (id: RowId) => {
     setActiveId(id);
     if (tRef.current >= 1) setT(0);
     setPlaying(true);
+  };
+  /** The play button, as distinct from an embed autoplaying itself below. */
+  const playWarp = (id: RowId) => {
+    trackOnce("first_warp_played", { warp_mode: "3d" });
+    startWarp(id);
   };
   const scrubWarp = (id: RowId, value: number) => {
     setActiveId(id);
@@ -413,7 +433,7 @@ export default function Warp3D({
   // Embedded scenes auto-play when the host page reports they're in view.
   const autoplayRef = useRef(() => {});
   autoplayRef.current = () => {
-    if (activeId) playWarp(activeId);
+    if (activeId) startWarp(activeId);
   };
   useEffect(() => {
     if (!EMBEDDED) return;
@@ -458,6 +478,7 @@ export default function Warp3D({
         onVectorCell={(id, i, v) => setCell(id, i, v, "vector")}
         onPlay={playWarp}
         onScrub={scrubWarp}
+        onReorder={reorderRows}
       />
       <SidebarResizer />
       <main className="stage">
