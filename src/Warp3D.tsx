@@ -11,6 +11,7 @@ import TransformCanvas3D, {
 } from "./components/TransformCanvas3D";
 import ExpressionList from "./components/ExpressionList";
 import SidebarResizer from "./components/SidebarResizer";
+import GerminateCredit from "./components/GerminateCredit";
 import { FEEDBACK_URL } from "./config";
 import { trackOnce } from "./analytics";
 import { useStickyErrors } from "./useStickyErrors";
@@ -505,6 +506,7 @@ export default function Warp3D({
             Tutorial
           </button>
         )}
+        {!EMBEDDED && <GerminateCredit />}
       </main>
     </div>
   );

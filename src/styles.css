@@ -589,6 +589,33 @@ body,
   font-family: inherit;
   cursor: pointer;
 }
+/* Sponsor credit — plain words floating over the graph, bottom-right. */
+.germinate-credit {
+  position: absolute;
+  bottom: 12px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  text-decoration: none;
+  opacity: 0.75;
+  transition: opacity 0.12s;
+}
+.germinate-credit:hover {
+  opacity: 1;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.germinate-mark {
+  flex: 0 0 auto;
+  display: block;
+}
+
 .warp-canvas {
   display: block;
   width: 100%;
