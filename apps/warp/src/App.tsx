@@ -15,6 +15,7 @@ import TransformCanvas, {
 import ExpressionList from "./components/ExpressionList";
 import SidebarResizer from "./components/SidebarResizer";
 import Tour from "./components/Tour";
+import GerminateCredit from "./components/GerminateCredit";
 import { FEEDBACK_URL } from "./config";
 import {
   apply,
@@ -1028,6 +1029,7 @@ function Warp2D({
             Tutorial
           </button>
         )}
+        {!EMBEDDED && <GerminateCredit />}
       </main>
     </div>
   );
