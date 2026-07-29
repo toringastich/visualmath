@@ -906,6 +906,20 @@ function Warp2D({
       }),
     );
 
+  /**
+   * Move a row to a new slot. Names resolve document-wide, so reordering
+   * never breaks a reference — but the first definition of a name owns it,
+   * so moving two rows that define the same name swaps which one wins.
+   */
+  const reorderRows = (from: number, to: number) =>
+    setRows((prev) => {
+      if (from < 0 || from >= prev.length) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to > from ? to - 1 : to, 0, moved);
+      return next;
+    });
+
   const deleteRow = (id: RowId) => {
     setRows((prev) => {
       const next = prev.filter((r) => r.id !== id);
@@ -986,6 +1000,7 @@ function Warp2D({
         onVectorCell={setVectorCell}
         onPlay={playWarp}
         onScrub={scrubWarp}
+        onReorder={reorderRows}
       />
       <SidebarResizer />
       <main className="stage">

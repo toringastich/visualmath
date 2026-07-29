@@ -393,6 +393,16 @@ export default function Warp3D({
     }
   };
 
+  /** Move a row to a new slot (see the 2D sandbox for the naming caveat). */
+  const reorderRows = (from: number, to: number) =>
+    setRows((prev) => {
+      if (from < 0 || from >= prev.length) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to > from ? to - 1 : to, 0, moved);
+      return next;
+    });
+
   const deleteRow = (id: RowId) => {
     setRows((prev) => {
       const next = prev.filter((r) => r.id !== id);
@@ -468,6 +478,7 @@ export default function Warp3D({
         onVectorCell={(id, i, v) => setCell(id, i, v, "vector")}
         onPlay={playWarp}
         onScrub={scrubWarp}
+        onReorder={reorderRows}
       />
       <SidebarResizer />
       <main className="stage">

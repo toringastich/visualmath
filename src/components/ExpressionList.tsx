@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { parseBinding } from "../lib/expr";
 import {
   type Mode,
@@ -42,6 +42,11 @@ interface Props {
   onVectorCell: (id: RowId, index: number, value: string) => void;
   onPlay: (id: RowId) => void;
   onScrub: (id: RowId, value: number) => void;
+  /**
+   * Move the row at `from` to the insertion slot `to`, indexed against the
+   * current list (0 = before the first row, rows.length = after the last).
+   */
+  onReorder: (from: number, to: number) => void;
 }
 
 const PALETTE: { kind: RowKind; label: string }[] = [
@@ -96,6 +101,52 @@ export default function ExpressionList(props: Props) {
   } = props;
   const [openGear, setOpenGear] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // --- Drag to reorder, Desmos-style: the row number on the left is the
+  // --- handle, so dragging never fights with editing a cell. `dragFrom` is
+  // --- the row being carried; `dropAt` is the insertion slot it would land in.
+  // The live drag lives in a ref so the handlers never read a stale closure
+  // (pointer events can arrive faster than React re-renders); the state
+  // mirrors it purely to drive the lifted row and the drop indicator.
+  const rowsRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<number | null>(null);
+  const [dragFrom, setDragFrom] = useState<number | null>(null);
+  const [dropAt, setDropAt] = useState<number | null>(null);
+
+  /** Insertion slot for a pointer at clientY, from the row midpoints. */
+  const slotAt = (clientY: number): number => {
+    const host = rowsRef.current;
+    if (!host) return 0;
+    const els = Array.from(host.querySelectorAll<HTMLElement>(".row"));
+    for (let i = 0; i < els.length; i++) {
+      const r = els[i].getBoundingClientRect();
+      if (clientY < r.top + r.height / 2) return i;
+    }
+    return els.length;
+  };
+
+  const startDrag = (index: number) => (e: React.PointerEvent) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    dragRef.current = index;
+    setDragFrom(index);
+    setDropAt(index);
+  };
+  const moveDrag = (e: React.PointerEvent) => {
+    if (dragRef.current === null) return;
+    setDropAt(slotAt(e.clientY));
+  };
+  const endDrag = (e: React.PointerEvent) => {
+    const from = dragRef.current;
+    dragRef.current = null;
+    setDragFrom(null);
+    setDropAt(null);
+    if (from === null) return;
+    const to = slotAt(e.clientY);
+    // A no-op move is either slot that leaves the row where it already is.
+    if (to !== from && to !== from + 1) props.onReorder(from, to);
+  };
 
   const handleShare = () => {
     props.onShare();
@@ -193,7 +244,7 @@ export default function ExpressionList(props: Props) {
         </div>
       </header>
 
-      <div className="rows">
+      <div className="rows" ref={rowsRef}>
         {rows.length === 0 && (
           <p className="empty-hint">Press + to add a matrix or vector.</p>
         )}
@@ -206,8 +257,28 @@ export default function ExpressionList(props: Props) {
           const graphable = isWarp || isEigen || color !== undefined;
           const shown = isWarp ? activeId === row.id : row.shown;
           return (
-            <div className="row" key={row.id} data-tour-kind={row.kind}>
-              <div className="row-index">{i + 1}</div>
+            <div
+              className={
+                "row" +
+                (dragFrom === i ? " dragging" : "") +
+                (dragFrom !== null && dropAt === i ? " drop-above" : "") +
+                (dragFrom !== null && dropAt === rows.length && i === rows.length - 1
+                  ? " drop-below"
+                  : "")
+              }
+              key={row.id}
+              data-tour-kind={row.kind}
+            >
+              <div
+                className="row-index"
+                title="Drag to reorder"
+                onPointerDown={startDrag(i)}
+                onPointerMove={moveDrag}
+                onPointerUp={endDrag}
+                onPointerCancel={endDrag}
+              >
+                {i + 1}
+              </div>
               <div className="row-body">
                 <div className="row-top">
                   {graphable ? (

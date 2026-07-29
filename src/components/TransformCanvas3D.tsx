@@ -206,12 +206,79 @@ export default function TransformCanvas3D({
       [{ x: 0, y: AXIS_EXTENT, z: 0 }, "y"],
       [{ x: 0, y: 0, z: AXIS_EXTENT }, "z"],
     ];
+    // The labels double as view shortcuts (see the click handling below), so
+    // keep a handle on each one and which axis it stands for.
+    const viewTargets: { axis: string; at: THREE.Vector3 }[] = [];
     for (const [end, name] of axisEnds) {
       scene.add(makeAxis(end, COLORS3.axis));
       const lbl = makeLabel(name, COLORS3.axisLabel, 0.7);
       lbl.position.copy(toV(end)).multiplyScalar(1.09);
       scene.add(lbl);
+      viewTargets.push({ axis: name, at: lbl.position.clone() });
     }
+
+    // --- Click an axis label to snap to that axis-aligned view ------------
+    // Looking down z is a birds-eye of the xy-plane, down x/y the side and
+    // back views. The z direction is nudged off the pole so the orbit
+    // controls' up vector stays well-defined (and +y reads as up on screen).
+    const VIEW_DIR: Record<string, THREE.Vector3> = {
+      x: new THREE.Vector3(1, 0, 0),
+      y: new THREE.Vector3(0, 1, 0),
+      z: new THREE.Vector3(0, -0.02, 1).normalize(),
+    };
+    const HIT_PX = 26; // forgiving click radius around a label
+    const ndc = new THREE.Vector3();
+
+    /** The axis label within HIT_PX of a client point, if any. */
+    function labelUnder(clientX: number, clientY: number): string | null {
+      const rect = container.getBoundingClientRect();
+      for (const t of viewTargets) {
+        ndc.copy(t.at).project(camera);
+        const sx = rect.left + ((ndc.x + 1) / 2) * rect.width;
+        const sy = rect.top + ((1 - ndc.y) / 2) * rect.height;
+        if (Math.hypot(clientX - sx, clientY - sy) <= HIT_PX) return t.axis;
+      }
+      return null;
+    }
+
+    // Tween state; the loop drives it, and any drag cancels it.
+    let tween: { from: THREE.Vector3; to: THREE.Vector3; t0: number } | null =
+      null;
+    const TWEEN_MS = 450;
+
+    function snapTo(axis: string) {
+      const dir = VIEW_DIR[axis];
+      if (!dir) return;
+      const dist = camera.position.distanceTo(controls.target);
+      tween = {
+        from: camera.position.clone(),
+        to: controls.target.clone().addScaledVector(dir, dist),
+        t0: performance.now(),
+      };
+    }
+
+    let downAt: { x: number; y: number } | null = null;
+    const onDown = (e: PointerEvent) => {
+      downAt = { x: e.clientX, y: e.clientY };
+      tween = null; // dragging always wins over an in-flight snap
+    };
+    const onUp = (e: PointerEvent) => {
+      const d = downAt;
+      downAt = null;
+      // Only a click (not an orbit drag) counts as hitting a label.
+      if (!d || Math.hypot(e.clientX - d.x, e.clientY - d.y) > 5) return;
+      const axis = labelUnder(e.clientX, e.clientY);
+      if (axis) snapTo(axis);
+    };
+    const onHover = (e: PointerEvent) => {
+      if (downAt) return;
+      renderer.domElement.style.cursor = labelUnder(e.clientX, e.clientY)
+        ? "pointer"
+        : "";
+    };
+    renderer.domElement.addEventListener("pointerdown", onDown);
+    renderer.domElement.addEventListener("pointerup", onUp);
+    renderer.domElement.addEventListener("pointermove", onHover);
 
     // Everything matrix/vector-dependent lives in one group that `sync`
     // rebuilds whenever the props change. The scene is tiny, so a full
@@ -379,7 +446,16 @@ export default function TransformCanvas3D({
     resize();
 
     let raf = 0;
-    const loop = () => {
+    const loop = (now: number) => {
+      if (tween) {
+        const k = Math.min(1, (now - tween.t0) / TWEEN_MS);
+        // easeInOutQuad
+        const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        // OrbitControls re-derives its spherical state from the camera each
+        // update(), so writing the position here composes cleanly with it.
+        camera.position.lerpVectors(tween.from, tween.to, e);
+        if (k >= 1) tween = null;
+      }
       controls.update();
       renderer.render(scene, camera);
       raf = requestAnimationFrame(loop);
@@ -389,6 +465,9 @@ export default function TransformCanvas3D({
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      renderer.domElement.removeEventListener("pointerdown", onDown);
+      renderer.domElement.removeEventListener("pointerup", onUp);
+      renderer.domElement.removeEventListener("pointermove", onHover);
       controls.dispose();
       disposeDeep(scene);
       renderer.dispose();

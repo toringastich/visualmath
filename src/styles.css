@@ -189,6 +189,42 @@ body,
   color: var(--muted);
   background: var(--panel);
   border-right: 1px solid var(--line);
+  cursor: grab;
+  touch-action: none; /* the handle owns the gesture, so the pane can't scroll */
+  user-select: none;
+}
+.row-index:hover {
+  color: var(--ink);
+  background: #f1f5fa;
+}
+
+/* ---------- Drag to reorder ---------- */
+.row.dragging {
+  opacity: 0.45;
+}
+.row.dragging .row-index {
+  cursor: grabbing;
+}
+/* Where the carried row would land. */
+.row.drop-above,
+.row.drop-below {
+  position: relative;
+}
+.row.drop-above::before,
+.row.drop-below::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--blue);
+  z-index: 4;
+}
+.row.drop-above::before {
+  top: -1px;
+}
+.row.drop-below::after {
+  bottom: -1px;
 }
 .row-body {
   flex: 1;
