@@ -23,6 +23,10 @@ interface Props {
   /** Expression rows whose value is a matrix — they can drive the warp. */
   warpables: Set<RowId>;
   eigenRows: Set<RowId>;
+  /** Top-level svd(M) rows — they report σ values and draw the image axes. */
+  svdRows: Set<RowId>;
+  /** The active warp is showing gridlines only (the middle click-state). */
+  gridOnly: boolean;
   /** Expr rows that bind a name to a plain number — they get a slider. */
   sliders: Map<RowId, number>;
   /** Top-level proj(v, w) rows — they get drop-animation controls. */
@@ -56,12 +60,19 @@ const PALETTE: { kind: RowKind; label: string }[] = [
   { kind: "slider", label: "Add slider" },
 ];
 
-/** Engine built-ins, inserted into an expression by its gear menu. */
-const FUNCTIONS: { label: string; insert: string }[] = [
+/**
+ * Engine built-ins, inserted into an expression by its gear menu. A few are
+ * dimension-specific: `eigen` is 2D-only for now, and the shape primitive is
+ * the circle in 2D, the sphere in 3D.
+ */
+const FUNCTIONS: { label: string; insert: string; only?: Mode }[] = [
   { label: "det( )", insert: "det()" },
-  { label: "eigen( )", insert: "eigen()" },
+  { label: "eigen( )", insert: "eigen()", only: "2d" },
+  { label: "svd( )", insert: "svd()" },
   { label: "inv( )", insert: "inv()" },
   { label: "transpose( )", insert: "transpose()" },
+  { label: "circle( ) — the unit circle", insert: "circle()", only: "2d" },
+  { label: "sphere( ) — the unit sphere", insert: "sphere()", only: "3d" },
   { label: "dot( , )", insert: "dot(, )" },
   { label: "cross( , )", insert: "cross(, )" },
   { label: "dot(del, ) — divergence", insert: "dot(del, )" },
@@ -92,6 +103,8 @@ export default function ExpressionList(props: Props) {
     colorOf,
     warpables,
     eigenRows,
+    svdRows,
+    gridOnly,
     sliders,
     projRows,
     stageNamesOf,
@@ -176,7 +189,7 @@ export default function ExpressionList(props: Props) {
 
   const functionPalette = (row: Row & { kind: "expr" }) => (
     <div className="palette">
-      {FUNCTIONS.map((f) => (
+      {FUNCTIONS.filter((f) => !f.only || f.only === mode).map((f) => (
         <button
           key={f.label}
           className="palette-item"
@@ -254,7 +267,8 @@ export default function ExpressionList(props: Props) {
           const isMatrix = row.kind === "matrix";
           const isWarp = isMatrix || warpables.has(row.id);
           const isEigen = eigenRows.has(row.id);
-          const graphable = isWarp || isEigen || color !== undefined;
+          const isSvd = svdRows.has(row.id);
+          const graphable = isWarp || isEigen || isSvd || color !== undefined;
           const shown = isWarp ? activeId === row.id : row.shown;
           return (
             <div
@@ -288,10 +302,26 @@ export default function ExpressionList(props: Props) {
                         "toggle-dot" +
                         (isWarp ? " matrix" : "") +
                         (isEigen ? " eigen" : "") +
-                        (shown ? " on" : "")
+                        (isSvd ? " svd" : "") +
+                        (shown ? " on" : "") +
+                        (isWarp && shown && gridOnly ? " gridonly" : "")
                       }
-                      style={!isWarp && !isEigen && color ? { color } : undefined}
-                      title={shown ? "Hide" : "Show"}
+                      style={
+                        !isWarp && !isEigen && !isSvd && color
+                          ? { color }
+                          : undefined
+                      }
+                      title={
+                        !isWarp
+                          ? shown
+                            ? "Hide"
+                            : "Show"
+                          : !shown
+                            ? "Show"
+                            : gridOnly
+                              ? "Hide"
+                              : "Show gridlines only"
+                      }
                       aria-pressed={shown}
                       onClick={() => props.onToggle(row.id)}
                     />

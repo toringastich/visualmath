@@ -182,12 +182,17 @@ function tokenize(src: string): Tok[] {
 const FN_ARITY = {
   det: 1,
   eigen: 1,
+  svd: 1,
   inv: 1,
   transpose: 1,
   norm: 1,
   dot: 2,
   cross: 2,
   proj: 2,
+  // Shape primitives: they take nothing and draw the unit circle / sphere,
+  // which the active matrix then carries onto an ellipse / ellipsoid.
+  circle: 0,
+  sphere: 0,
 } as const;
 export type FnName = keyof typeof FN_ARITY;
 
@@ -286,16 +291,21 @@ class Parser {
         if (this.peek()?.t !== "lp")
           throw new ExprError(`${fn} expects parentheses`);
         this.next(); // (
-        const args: Node[] = [this.parseExpr()];
-        while (this.peek()?.t === "comma") {
-          this.next();
+        // "circle()" — an empty argument list is legal for the zero-arity
+        // shape primitives, and caught by the arity check otherwise.
+        const args: Node[] = [];
+        if (this.peek()?.t !== "rp") {
           args.push(this.parseExpr());
+          while (this.peek()?.t === "comma") {
+            this.next();
+            args.push(this.parseExpr());
+          }
         }
         if (this.next()?.t !== "rp") throw new ExprError("Missing )");
         const want = FN_ARITY[fn];
         if (args.length !== want)
           throw new ExprError(
-            `${fn} expects ${want} argument${want > 1 ? "s" : ""}`,
+            `${fn} expects ${want} argument${want === 1 ? "" : "s"}`,
           );
         return { t: "call", fn, args };
       }
@@ -692,6 +702,14 @@ export function evaluate(node: Node, env: Env): Value {
           // eigen doesn't produce a scalar/vector/matrix, so it can't take
           // part in a larger expression; App handles it at the top level.
           throw new ExprError("eigen(…) can only be used on its own");
+        case "svd":
+          // Same as eigen: a bundle of singular values and directions, not a
+          // single value, so the sandbox handles it at the top level.
+          throw new ExprError("svd(…) can only be used on its own");
+        case "circle":
+          throw new ExprError("circle() can only be used on its own");
+        case "sphere":
+          throw new ExprError("sphere() can only be used on its own");
       }
     }
   }

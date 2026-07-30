@@ -31,8 +31,9 @@ npm run build    # type-check + production build
 ```
 src/
   lib/
-    matrix.ts          Pure 2x2 linear-algebra helpers (no rendering deps)
-    matrix3.ts         Pure 3x3 counterparts (det, inverse, transpose, lerp)
+    matrix.ts          Pure 2x2 linear-algebra helpers (det, eigen, svd, …)
+    matrix3.ts         Pure 3x3 counterparts (det, inverse, transpose, lerp,
+                       svd via a Jacobi eigensolver)
     expr.ts            Tokenizer + recursive-descent parser + typed evaluator
                        over scalars / vectors / matrices in both dimensions
   rows.ts              Document model: typed rows, auto-naming, shared types
@@ -53,8 +54,9 @@ same expression engine and expression-list UI on top of a Three.js stage.
 
 - **Expression-list sandbox**: add matrices (`M, N…`), vectors (`v, w…`),
   expressions, and sliders from the header **+** menu; each expression row's
-  gear menu inserts any engine function (`det`, `eigen`, `inv`, `transpose`,
-  `dot`, `norm`, `proj`). Everything is live.
+  gear menu inserts any engine function (`det`, `eigen`, `svd`, `inv`,
+  `transpose`, `dot`, `norm`, `proj`, `circle`/`sphere`) — offering the ones
+  that apply to the current dimension. Everything is live.
 - **Expression engine**: `+ − ×`, unary minus, parentheses, vector literals
   `(a, b)`, implicit multiplication, and variable references over scalars /
   vectors / 2×2 matrices — so `M·v`, `M·N`, `det(M)`, `v + w` all work, with
@@ -85,6 +87,17 @@ same expression engine and expression-list UI on top of a Three.js stage.
   is itself graphable — toggle it on and the play button animates one factor at
   a time, right-to-left (first N warps space, then M lands on M·N), with a
   stage indicator showing which factor is applying.
+- **Singular values / SVD**: `svd(M)` reports σ₁ ≥ σ₂ (≥ σ₃ in 3D) with the
+  input direction each one stretches, plus a one-line reading of the whole
+  decomposition (`Vᵀ spins −50.3°, Σ stretches, U spins 23.7°`). Toggle it on
+  and a unit vector along each input axis rides the warp, landing exactly on a
+  semi-axis of the image ellipse. V is normalized to a pure rotation, so every
+  orientation flip shows up in U — and σ₁·σ₂ is always |det|.
+- **The unit circle and sphere**: `circle()` (2D) and `sphere()` (3D) graph the
+  shape itself, so the active matrix carries it to the ellipse / ellipsoid whose
+  semi-axes *are* the singular values. The 2D version keeps a dashed ghost of
+  where it started. Drive σ to zero and the ellipse flattens to a segment — the
+  same rank collapse the determinant shows, but continuously.
 - **Eigenvectors**: `eigen(M)` shows λ₁/λ₂ and their eigen-directions inline,
   draws the invariant lines (dashed) through the origin, and plots unit
   eigenvectors that ride the warp — so during animation they stretch by λ along
@@ -98,6 +111,10 @@ same expression engine and expression-list UI on top of a Three.js stage.
 - **Vectors ride along** the warp; **computed results** are fixed markers.
 - **Vector addition** drawn head-to-tail. **Pan/zoom** with adaptive tick labels.
 - **Desmos-style visibility toggles** per row; matrices are mutually exclusive.
+  A matrix's dot cycles through three states — full (warped grid + basis
+  vectors + unit square/cube), **gridlines only**, and off — so a scene about
+  some other shape can drop the furniture without extra controls. The state
+  rides along in the share link.
 - Handles edge cases: det = 0 (collapse to a line) and negative det (flip).
 
 - **Save, share, undo**: the whole sandbox (both documents + mode) serializes

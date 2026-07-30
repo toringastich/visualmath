@@ -7,6 +7,24 @@ export function fmt(n: number): string {
   return Object.is(r, -0) ? "0" : String(r);
 }
 
+/**
+ * Rounder display for eigen/svd output, where the values are usually
+ * irrational and six decimals would be noise.
+ */
+export function fmt3(n: number): string {
+  const r = Math.round(n * 1e3) / 1e3;
+  return Object.is(r, -0) ? "0" : String(r);
+}
+
+/** Subscript digits, for λ₁ / σ₂ style labels. */
+export const SUBS = ["₁", "₂", "₃"];
+
+/** An angle in radians as degrees to one decimal ("36.9°"). */
+export function degrees(rad: number): string {
+  const d = Math.round(((rad * 180) / Math.PI) * 10) / 10;
+  return `${Object.is(d, -0) ? 0 : d}°`;
+}
+
 /** A polynomial as display text ("2x³ + 3xy²"; plain number when constant). */
 export function polyText(p: P.Poly): string {
   return P.toText(p, fmt);

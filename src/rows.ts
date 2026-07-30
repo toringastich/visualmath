@@ -18,6 +18,14 @@ import { type Poly } from "./lib/poly";
 export type RowId = string;
 export type Mode = "2d" | "3d";
 
+/**
+ * How much of the active matrix to draw. "grid" keeps the warped gridlines
+ * (the transformation is still visible and still animates) but drops the basis
+ * vectors and the unit square/cube — the right choice when the scene is about
+ * some other shape the matrix is carrying.
+ */
+export type MatrixView = "none" | "grid" | "full";
+
 let idCounter = 0;
 export const newId = (): RowId => `r${++idCounter}`;
 
@@ -136,3 +144,14 @@ export const GRAPH_COLORS = [
 
 /** Fixed colors for λ₁ / λ₂ so eigen rows always look the same. */
 export const EIGEN_COLORS = ["#e0792b", "#6042a6"];
+
+/** Fixed colors for σ₁ / σ₂ / σ₃ — the axes of the image ellipse(oid). */
+export const SVD_COLORS = ["#e0792b", "#6042a6", "#0d9488"];
+
+/**
+ * The unit circle / sphere and its image. A deeper shade of the green that
+ * fills the unit square — the two are siblings (both "the region space
+ * carries", one measuring area, the other stretch) but the darker line keeps
+ * the ellipse readable where it overlaps the parallelogram.
+ */
+export const SHAPE_COLOR = "#4f7a2e";

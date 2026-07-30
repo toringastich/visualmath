@@ -10,6 +10,7 @@ import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
 import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeometry.js";
 import { apply3, col3, type Mat3, type Vec3 } from "../lib/matrix3";
+import { type MatrixView } from "../rows";
 
 export interface Vector3Drawable {
   kind: "vector";
@@ -25,7 +26,14 @@ export interface ParallelogramDrawable {
   b: Vec3;
   color: string;
 }
-export type Drawable3 = Vector3Drawable | ParallelogramDrawable;
+export interface SphereDrawable {
+  kind: "sphere";
+  color: string;
+}
+export type Drawable3 =
+  | Vector3Drawable
+  | ParallelogramDrawable
+  | SphereDrawable;
 
 // Light Desmos-style stage (continuous with the 2D graph); the basis
 // vectors keep the 3b1b palette: î green, ĵ red, k̂ blue.
@@ -141,24 +149,27 @@ function disposeDeep(root: THREE.Object3D) {
 interface Props {
   /** The matrix whose action is displayed (identity when nothing is active). */
   warp: Mat3;
-  /** Draw basis vectors + the warped unit cube for the active matrix. */
-  showActiveMatrix: boolean;
+  /**
+   * How much of the active matrix to draw: nothing, the warped lattice alone,
+   * or the lattice plus the basis vectors and the warped unit cube.
+   */
+  matrixView: MatrixView;
   drawables: Drawable3[];
 }
 
 export default function TransformCanvas3D({
   warp,
-  showActiveMatrix,
+  matrixView,
   drawables,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const warpRef = useRef(warp);
   const drawablesRef = useRef(drawables);
-  const activeRef = useRef(showActiveMatrix);
+  const viewRef = useRef(matrixView);
   const syncRef = useRef<() => void>(() => {});
   warpRef.current = warp;
   drawablesRef.current = drawables;
-  activeRef.current = showActiveMatrix;
+  viewRef.current = matrixView;
 
   useEffect(() => {
     const container = containerRef.current!;
@@ -294,7 +305,7 @@ export default function TransformCanvas3D({
       dynamic.clear();
       const M = warpRef.current;
 
-      if (activeRef.current) {
+      if (viewRef.current !== "none") {
         // Warped lattice. A linear map keeps lines straight, so each lattice
         // line is just a segment between its two warped endpoints. Rendered
         // with LineSegments2 so the lines have a real pixel width.
@@ -321,7 +332,9 @@ export default function TransformCanvas3D({
         });
         latticeMat.resolution.copy(viewSize);
         dynamic.add(new LineSegments2(latticeGeom, latticeMat));
+      }
 
+      if (viewRef.current === "full") {
         // Warped unit cube (the parallelepiped whose volume is |det|).
         const corners: THREE.Vector3[] = [];
         for (let i = 0; i < 8; i++)
@@ -382,6 +395,80 @@ export default function TransformCanvas3D({
       }
 
       for (const d of drawablesRef.current) {
+        if (d.kind === "sphere") {
+          // The unit sphere carried through the warp — an ellipsoid whose
+          // semi-axes are the singular values. Rather than warping vertices by
+          // hand, hand the matrix to Three.js as the object's transform: it's
+          // exactly a linear map, so a singular matrix flattens the surface to
+          // a disc (or a segment) on its own, which is the point of the scene.
+          const m4 = new THREE.Matrix4().set(
+            M[0], M[1], M[2], 0,
+            M[3], M[4], M[5], 0,
+            M[6], M[7], M[8], 0,
+            0, 0, 0, 1,
+          );
+          const place = (o: THREE.Object3D) => {
+            o.matrixAutoUpdate = false;
+            o.matrix.copy(m4);
+            o.frustumCulled = false; // a flattened bounding sphere confuses it
+            dynamic.add(o);
+          };
+
+          place(
+            new THREE.Mesh(
+              new THREE.SphereGeometry(1, 48, 32),
+              new THREE.MeshBasicMaterial({
+                color: d.color,
+                transparent: true,
+                opacity: 0.15,
+                side: THREE.DoubleSide,
+                depthWrite: false,
+              }),
+            ),
+          );
+
+          // Latitude/longitude wireframe, so the stretch is legible on the
+          // surface instead of just in its silhouette.
+          const STEPS = 40;
+          const wire: number[] = [];
+          const at = (theta: number, phi: number): [number, number, number] => [
+            Math.sin(theta) * Math.cos(phi),
+            Math.sin(theta) * Math.sin(phi),
+            Math.cos(theta),
+          ];
+          const addSeg = (
+            a: [number, number, number],
+            b: [number, number, number],
+          ) => wire.push(...a, ...b);
+          for (let j = 0; j < 6; j++) {
+            const phi = (Math.PI * j) / 6; // meridians (each spans both poles)
+            for (let k = 0; k < STEPS; k++) {
+              const t0 = (2 * Math.PI * k) / STEPS;
+              const t1 = (2 * Math.PI * (k + 1)) / STEPS;
+              addSeg(at(t0, phi), at(t1, phi));
+            }
+          }
+          for (let i = 1; i < 5; i++) {
+            const theta = (Math.PI * i) / 5; // parallels
+            for (let k = 0; k < STEPS; k++) {
+              addSeg(
+                at(theta, (2 * Math.PI * k) / STEPS),
+                at(theta, (2 * Math.PI * (k + 1)) / STEPS),
+              );
+            }
+          }
+          const wireGeom = new LineSegmentsGeometry();
+          wireGeom.setPositions(wire);
+          const wireMat = new LineMaterial({
+            color: new THREE.Color(d.color).getHex(),
+            transparent: true,
+            opacity: 0.4,
+            linewidth: 1.1,
+          });
+          wireMat.resolution.copy(viewSize);
+          place(new LineSegments2(wireGeom, wireMat));
+          continue;
+        }
         if (d.kind === "para") {
           // Translucent parallelogram spanned by a and b (area = |a×b|).
           const o = new THREE.Vector3(0, 0, 0);
@@ -477,7 +564,7 @@ export default function TransformCanvas3D({
 
   useEffect(() => {
     syncRef.current();
-  }, [warp, drawables, showActiveMatrix]);
+  }, [warp, drawables, matrixView]);
 
   return <div ref={containerRef} className="warp-canvas3d" />;
 }

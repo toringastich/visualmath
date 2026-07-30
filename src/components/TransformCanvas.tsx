@@ -8,6 +8,7 @@ import {
   type Mat2,
   type Vec2,
 } from "../lib/matrix";
+import { type MatrixView } from "../rows";
 
 interface View {
   cx: number; // world coordinate at canvas center
@@ -47,7 +48,25 @@ export interface ProjDrawable {
   /** Sweep the arrow from `from` to `to` with projT instead of drawing settled. */
   animate: boolean;
 }
-export type Drawable = VectorDrawable | SumDrawable | LineDrawable | ProjDrawable;
+export interface CircleDrawable {
+  kind: "circle";
+  color: string;
+  /** Also outline the untransformed unit circle, for comparison. */
+  ghost: boolean;
+}
+export type Drawable =
+  | VectorDrawable
+  | SumDrawable
+  | LineDrawable
+  | ProjDrawable
+  | CircleDrawable;
+
+/**
+ * Samples around the unit circle. A linear map sends it to an ellipse, so the
+ * warped samples are exactly on the image curve — enough of them and the
+ * polyline reads as a smooth conic at any zoom the sandbox allows.
+ */
+const CIRCLE_STEPS = 180;
 
 const COLORS = {
   bg: "#ffffff",
@@ -75,8 +94,12 @@ function formatTick(n: number): string {
 interface Props {
   /** The ambient warp applied to the grid and ride-along vectors. */
   warp: Mat2;
-  /** Draw the basis vectors + unit parallelogram for the active matrix. */
-  showActiveMatrix: boolean;
+  /**
+   * How much of the active matrix to draw. The warped gridlines come from
+   * `warp` and are always drawn; this only decides whether the basis vectors
+   * and the unit parallelogram come with them ("full") or not.
+   */
+  matrixView: MatrixView;
   drawables: Drawable[];
   /** Animation position for proj drawables flagged `animate`. */
   projT: number;
@@ -84,7 +107,7 @@ interface Props {
 
 export default function TransformCanvas({
   warp,
-  showActiveMatrix,
+  matrixView,
   drawables,
   projT,
 }: Props) {
@@ -92,7 +115,7 @@ export default function TransformCanvas({
   const viewRef = useRef<View>({ cx: 0, cy: 0, scale: 80 });
   const warpRef = useRef<Mat2>(warp);
   const drawablesRef = useRef<Drawable[]>(drawables);
-  const activeRef = useRef<boolean>(showActiveMatrix);
+  const fullRef = useRef<boolean>(matrixView === "full");
   const projTRef = useRef<number>(projT);
   const sizeRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
   const dragRef = useRef<{ x: number; y: number } | null>(null);
@@ -100,7 +123,7 @@ export default function TransformCanvas({
 
   warpRef.current = warp;
   drawablesRef.current = drawables;
-  activeRef.current = showActiveMatrix;
+  fullRef.current = matrixView === "full";
   projTRef.current = projT;
 
   const drawRef = useRef<() => void>(() => {});
@@ -298,7 +321,7 @@ export default function TransformCanvas({
       }
 
       // Unit square -> parallelogram for the active matrix.
-      if (activeRef.current) {
+      if (fullRef.current) {
         const o = toScreen(apply(M, { x: 0, y: 0 }));
         const pi = toScreen(apply(M, { x: 1, y: 0 }));
         const pij = toScreen(apply(M, { x: 1, y: 1 }));
@@ -347,7 +370,7 @@ export default function TransformCanvas({
       }
 
       // Basis vectors for the active matrix.
-      if (activeRef.current) {
+      if (fullRef.current) {
         const zero = { x: 0, y: 0 };
         arrow(zero, jHat(M), COLORS.jHat);
         arrow(zero, iHat(M), COLORS.iHat);
@@ -378,7 +401,50 @@ export default function TransformCanvas({
         ctx.stroke();
         ctx.restore();
       };
+      /**
+       * The unit circle carried through the warp. Every matrix maps it to an
+       * ellipse (possibly a segment, when the warp is singular) — the shape
+       * whose semi-axes are the singular values.
+       */
+      const shape = (d: CircleDrawable) => {
+        const path = (xform: (v: Vec2) => Vec2) => {
+          ctx.beginPath();
+          for (let k = 0; k <= CIRCLE_STEPS; k++) {
+            const a = (2 * Math.PI * k) / CIRCLE_STEPS;
+            const s = toScreen(xform({ x: Math.cos(a), y: Math.sin(a) }));
+            if (k === 0) ctx.moveTo(s.x, s.y);
+            else ctx.lineTo(s.x, s.y);
+          }
+          ctx.closePath();
+        };
+        ctx.save();
+        if (d.ghost) {
+          // Where it started: a faint dashed unit circle to measure against.
+          path((v) => v);
+          ctx.globalAlpha = 0.45;
+          ctx.strokeStyle = d.color;
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([5, 5]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+        path((v) => apply(M, v));
+        ctx.globalAlpha = 0.14;
+        ctx.fillStyle = d.color;
+        ctx.fill();
+        ctx.globalAlpha = 0.95;
+        ctx.strokeStyle = d.color;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.restore();
+      };
+      // Shapes first, whatever order the rows are in, so the singular-value
+      // arrows always land on top of the ellipse they measure.
+      for (const d of drawablesRef.current)
+        if (d.kind === "circle") shape(d);
+
       for (const d of drawablesRef.current) {
+        if (d.kind === "circle") continue;
         if (d.kind === "line") {
           originLine(d.dir, d.color);
           continue;
@@ -514,7 +580,7 @@ export default function TransformCanvas({
 
   useEffect(() => {
     drawRef.current();
-  }, [warp, drawables, showActiveMatrix, projT]);
+  }, [warp, drawables, matrixView, projT]);
 
   return <canvas ref={canvasRef} className="warp-canvas" />;
 }
