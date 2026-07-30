@@ -30,9 +30,15 @@ export default function App() {
           </a>
         ))}
       </main>
+      {/* Rebranded copy and the monorepo link go live only with the post-Aug-30
+          cutover — the judged article is served from the standalone repo, whose
+          copy of this file is deliberately left alone until then. */}
       <footer className="home-footer">
-        <span>Part of the Warp family · free, no accounts, runs in your browser</span>
-        <a href="https://github.com/toringastich/warp-lessons">GitHub</a>
+        <span>
+          A <a href="https://secantlabs.org">Secant Labs</a> project · free, no
+          accounts, runs in your browser
+        </span>
+        <a href="https://github.com/secantlabs/visualmath">GitHub</a>
       </footer>
     </div>
   );
