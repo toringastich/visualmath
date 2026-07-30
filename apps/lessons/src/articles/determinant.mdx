@@ -1,0 +1,163 @@
+import WarpEmbed from "../WarpEmbed";
+import {
+  DET_AREA,
+  DET_FLIP,
+  DET_VOLUME,
+  DET_COMPOSE,
+  DET_INVERT,
+  DET_BLANK,
+  WARP_URL,
+} from "../states";
+
+{/* Story + prose synced from the vault file
+    "Determinant Lesson — Narration (proposed).md". Captions live in the body
+    now, not on the embeds. Edit there and ask to re-sync, or edit here. */}
+
+A 2×2 matrix is just four numbers. But it is also a linear transformation:
+each column is a vector, and together they warp the gridlines of 2-D space.
+The determinant is a fifth number, built from those four — and it carries a
+startling amount of meaning. It tells you whether the transformation stretches
+space, flips it, flattens it, or can be undone at all. Four numbers in, one
+number out, and somehow it knows everything. How?
+
+My name is Torin, and I just graduated from high school. In my senior calculus
+class we used determinants mostly for symbol-pushing — a formula, a means to an
+end. Then 3Blue1Brown's videos showed me that a determinant is far more than a
+formula, and I wanted to bring that kind of visual, hands-on intuition into a
+sandbox you can actually play in, the way you play in Desmos. That's why I
+built Warp, and why I wrote this lesson to teach with it.
+
+By the end you won't have memorized a single formula, but you'll have a strong,
+almost physical sense of what a determinant is. You'll get there the same way I
+taught myself linear algebra: by watching it move, and by changing things
+yourself. Every diagram below is a live copy of Warp — so don't just read it.
+Grab it, type in it, break it.
+
+## The one number is an area
+
+Start in two dimensions. A matrix takes the humble unit square — one unit wide,
+one unit tall, area exactly 1 — and warps it into a parallelogram. In the panel
+below, the matrix `M` is doing exactly that: the shaded patch is where the unit
+square lands, and the row labelled `det(M)` reports a single number for it. To
+start, that number is 6.
+
+<WarpEmbed state={DET_AREA} />
+
+That number is the punchline of the whole lesson: **the determinant is the
+factor by which the transformation scales area.** The unit square began with
+area 1, so the determinant is simply the area of the parallelogram it becomes.
+
+See it for yourself. Click any entry of `M` and type a new value — the
+parallelogram stretches or shears, and `det(M)` moves right along with its
+area. Try making `M` have a smaller determinant, then try making a larger one!
+Keep experimenting right here, or open the scene in a full window if you'd like
+more room.
+
+## Drive it to zero, and straight past it
+
+If the determinant is an area, what would it mean for it to be *zero*? An area
+of zero is a shape with no interior — something crushed perfectly flat.
+
+The matrix in the next panel starts with a determinant of −1. Press play and
+watch the transformation unfold gradually; replay it as many times as you like,
+or grab the slider on the right and scrub to any moment in between. Halfway
+through, the whole grid thins to a single line — that's the instant the
+determinant passes through zero, where two-dimensional space has been flattened
+onto one dimension. Keep going and space reopens on the far side,
+mirror-reversed.
+
+<WarpEmbed state={DET_FLIP} />
+
+That flip is the second thing a determinant tells you: **orientation.** A
+positive determinant keeps space oriented the way it started; a negative one
+turns it inside out, the way a mirror swaps left and right; zero is the
+knife-edge between them, the moment space is squeezed so hard it loses a
+dimension. So the determinant's size tells you *how much* area changed, and its
+sign tells you *whether space got flipped* along the way. Try retyping the
+matrix and replaying — some transformations flip, some don't.
+
+## In three dimensions, it's a volume
+
+None of that was special to the flat plane. Step up to three dimensions and the
+unit square becomes the unit *cube*, and the determinant becomes the factor by
+which the transformation scales **volume**.
+
+{/* No `zoom` override: the default wide framing shows the xyz axes, which is
+    the point of the reader's first 3D scene. */}
+<WarpEmbed state={DET_VOLUME} height={520} />
+
+Drag inside the panel to orbit the scene. The cube of volume 1 has landed as a
+slanted box (called a parallelepiped) and its volume is exactly what `det(M)`
+reports (it begins at 2). A determinant of zero here would mean the box has been
+crushed flat into a plane, a line, or a single point: volume gone.
+
+Now make it yours. Change the numbers in the matrix, press play, and watch the
+box — and its volume, the determinant — respond. It's the same story as before,
+with one more dimension of room to move in.
+
+## Why det(A·B) = det(A) · det(B)
+
+Here's a fact that looks like algebra but is really geometry. Do one
+transformation, then another. The first scales area by its determinant; the
+second scales *that* by its own determinant. Scalings simply multiply — so the
+determinant of the combined transformation has to be the product of the two.
+Mathematicians can grind that out with a page of algebra, or you can just watch
+it happen.
+
+<WarpEmbed state={DET_COMPOSE} height={520} />
+
+The panel above has three rows: `M`, `N`, and their product `C = M·N`. **`C`
+shows both matrices at once** — the single transformation you get by doing `N`
+first and then `M`. Its play button walks through that combination one step at a
+time: first `N` warps space, scaling area by its determinant, then `M` lands on
+top, scaling by its. Watch the running area grow by `N`'s factor, then by
+`M`'s — and land exactly on the determinant of `C`. To start, `det(M)` is 2 and
+`det(N)` is 3, and sure enough `det(C)` is 6.
+
+To pull the two apart, click the small circle to the left of `M`, or of `N`.
+**Toggling one of them on makes just that single matrix warp space**, so you can
+read its determinant on its own — then switch back to `C` to see them combined
+again. However you slice it, the determinant of the product is the two
+determinants multiplied. That's the whole proof, and you can watch it hold for
+any numbers you type. Feeling ambitious? Press the plus button to add a third
+matrix and fold it into the product too.
+
+## The payoff: when can you undo a matrix?
+
+Now the question the whole lesson has been circling: when can a transformation
+be undone? A transformation is *invertible* when every landing spot came from
+exactly one starting point — so you can always retrace your steps.
+
+<WarpEmbed state={DET_INVERT} />
+
+Look at what a zero determinant does to that. In the panel, `det(M)` is 0 and
+the grid has collapsed onto a single line. Every point on that line is now a
+pile-up of a whole line's worth of starting points, stacked on top of one
+another. Which one did you come from? There's no way to tell — the information
+is gone. The row `inv(M)` says it outright: not invertible.
+
+That's the punchline the subject rests on: **a matrix is invertible exactly
+when its determinant is not zero.** Not a rule to memorize — something you just
+watched happen. A zero determinant flattens space, flattening destroys
+information, and destroyed information can't be recovered. One number — an area,
+a volume — told you whether the transformation could be undone before you ever
+tried. Nudge an entry so the determinant leaves zero, and watch `inv(M)` spring
+back to life.
+
+## Now it's yours
+
+Everything above ran on Warp — and here's a blank one, entirely yours. Add a
+matrix from the **+** menu, type `det(M)` into a new row, and experiment. New
+here? Press **Tutorial** for a quick tour. A few challenges worth trying:
+
+- Find a matrix with determinant 1 that *isn't* the identity — a shear. It
+  moves every vector, yet changes no area at all.
+- Push a determinant below zero and play the animation to feel the flip.
+- Switch to 3D, type a `3×3` matrix, and hunt for the determinant hitting
+  zero — the moment the box goes flat.
+
+<WarpEmbed state={DET_BLANK} height={560} tutorial />
+
+<p className="article-cta">
+  <a href={WARP_URL}>Open the full sandbox →</a>
+</p>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Warp Lessons — interactive linear algebra walkthroughs</title>
+    <meta
+      name="description"
+      content="Click-through, fully interactive lessons built on Warp: read a little, watch space move, then try it yourself in the sandbox."
+    />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>▦</text></svg>" />
+
+    <!-- Google Analytics (GA4). Skipped when embedded in an iframe, so Warp
+         scenes embedded in lessons don't inflate pageviews; skipped on
+         localhost so dev work never pollutes the numbers. -->
+    <script>
+      if (window.self === window.top && location.hostname !== "localhost") {
+        var s = document.createElement("script");
+        s.async = true;
+        s.src = "https://www.googletagmanager.com/gtag/js?id=G-KSXRQBEMD9";
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag("js", new Date());
+        gtag("config", "G-KSXRQBEMD9");
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
