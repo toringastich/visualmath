@@ -1,5 +1,5 @@
 const ORG_NAME = "Secant Labs";
-const GITHUB_URL = "https://github.com/secantlabs/visualmath";
+const GITHUB_URL = "https://github.com/secantlabs/secantlabsmonorepo";
 
 type Status = "live" | "building" | "planned";
 

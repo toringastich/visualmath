@@ -38,7 +38,7 @@ export default function App() {
           A <a href="https://secantlabs.org">Secant Labs</a> project · free, no
           accounts, runs in your browser
         </span>
-        <a href="https://github.com/secantlabs/visualmath">GitHub</a>
+        <a href="https://github.com/secantlabs/secantlabsmonorepo">GitHub</a>
       </footer>
     </div>
   );

@@ -6,7 +6,7 @@
   "homepage": "https://secantlabs.org",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/secantlabs/visualmath.git"
+    "url": "git+https://github.com/secantlabs/secantlabsmonorepo.git"
   },
   "license": "UNLICENSED",
   "workspaces": [
