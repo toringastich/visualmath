@@ -1,7 +1,5 @@
-// Working title — rename the brand here (and the <title> in index.html).
-const SITE_NAME = "Visual Math";
-
-const GITHUB_URL = "https://github.com/toringastich/visualmath";
+const ORG_NAME = "Secant Labs";
+const GITHUB_URL = "https://github.com/secantlabs/visualmath";
 
 type Status = "live" | "building" | "planned";
 
@@ -26,6 +24,9 @@ const TOOLS: Tool[] = [
     name: "Warp Lessons",
     subject: "Guided walkthroughs",
     status: "building",
+    // Stays on the toringastich account on purpose: this is the frozen Summer
+    // of Math Exposition entry URL, and only that repo's Pages site can serve
+    // it. Repoint after judging closes (Aug 30).
     href: "https://toringastich.github.io/warp-lessons/",
     description:
       "Click-through, fully interactive lessons built on Warp — starting with eigenvectors. Read a little, watch the space move, then try it yourself in the sandbox. Summer of Math Exposition 2026 entry.",
@@ -51,6 +52,21 @@ const STATUS_LABEL: Record<Status, string> = {
   building: "In progress",
   planned: "Planned",
 };
+
+const PRINCIPLES = [
+  {
+    title: "Free, and staying that way",
+    body: "Every tool is free to use — no account, no paywall, no lesson you have to unlock. Students are who these are for.",
+  },
+  {
+    title: "Nothing to install",
+    body: "Everything runs client-side in the browser. No backend holds your work, and a scene is just a URL, so sharing one is sending a link.",
+  },
+  {
+    title: "Built for intuition, not answers",
+    body: "These aren't solvers. They show you the object acting on space, so the theorem arrives as something you watched happen rather than something you took on faith.",
+  },
+];
 
 /** A sheared grid — the brand motif: straight lines, warped space. */
 function HeroGrid() {
@@ -81,7 +97,7 @@ function ToolCard({ tool }: { tool: Tool }) {
           {STATUS_LABEL[tool.status]}
         </span>
       </div>
-      <h2 className="card-name">{tool.name}</h2>
+      <h3 className="card-name">{tool.name}</h3>
       <p className="card-desc">{tool.description}</p>
       {tool.href && <span className="card-cta">Open →</span>}
     </>
@@ -98,33 +114,87 @@ function ToolCard({ tool }: { tool: Tool }) {
 export default function App() {
   return (
     <div className="page">
+      <nav className="nav">
+        <a className="brand" href="/">
+          <span className="brand-mark">▦</span>
+          <span className="brand-name">{ORG_NAME}</span>
+        </a>
+        <div className="nav-links">
+          <a href="#tools">Tools</a>
+          <a href="#about">About</a>
+          <a href={GITHUB_URL}>GitHub</a>
+        </div>
+      </nav>
+
       <header className="hero">
         <HeroGrid />
         <div className="hero-inner">
-          <div className="brand">
-            <span className="brand-mark">▦</span>
-            <span className="brand-name">{SITE_NAME}</span>
-          </div>
+          <p className="hero-eyebrow">{ORG_NAME}</p>
           <h1>See what the math does.</h1>
           <p className="hero-sub">
-            Free, interactive sandboxes for the math courses where intuition
-            goes missing. Type a mathematical object — a matrix, a function, a
-            field — and watch it act on space. Runs in your browser: no
-            installs, no accounts, nothing to set up.
+            We make Warp and other interactive tools for seeing the mathematics
+            where intuition goes missing. Type a mathematical object — a matrix,
+            a function, a field — and watch it act on space. Free, in your
+            browser, nothing to set up.
           </p>
+          <div className="hero-actions">
+            <a className="btn btn-primary" href="https://warp.us.com">
+              Open Warp
+            </a>
+            <a className="btn btn-ghost" href="#tools">
+              See all tools
+            </a>
+          </div>
         </div>
       </header>
 
-      <main className="cards">
-        {TOOLS.map((t) => (
-          <ToolCard key={t.name} tool={t} />
-        ))}
+      <main>
+        <section className="section" id="tools">
+          <div className="section-head">
+            <h2>Our tools</h2>
+            <p>
+              One sandbox per course, all built on the same engine. Two are live
+              today; the rest are on the way.
+            </p>
+          </div>
+          <div className="cards">
+            {TOOLS.map((t) => (
+              <ToolCard key={t.name} tool={t} />
+            ))}
+          </div>
+        </section>
+
+        <section className="section section-about" id="about">
+          <div className="section-head">
+            <h2>Why we build these</h2>
+            <p>
+              A lot of mathematics is hard only because it is invisible. A
+              matrix is a table of numbers until you watch it move the plane —
+              and then it is obvious, and it stays obvious. {ORG_NAME} exists to
+              build that moment for the courses that need it most, and to give
+              it away.
+            </p>
+            <p>
+              A secant line is the rough guess that becomes the tangent in the
+              limit: start with something you can actually see, then refine.
+              That's the name, and it's the method.
+            </p>
+          </div>
+          <ul className="principles">
+            {PRINCIPLES.map((p) => (
+              <li key={p.title}>
+                <h3>{p.title}</h3>
+                <p>{p.body}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
       </main>
 
       <footer className="footer">
         <span>
-          Built by Torin Gastich · inspired by the belief that mathematics
-          must be visualized
+          {ORG_NAME} · built by Torin Gastich · inspired by the belief that
+          mathematics must be visualized
         </span>
         <a href={GITHUB_URL}>GitHub</a>
       </footer>
