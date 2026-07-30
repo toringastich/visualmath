@@ -16,6 +16,13 @@ export const ARTICLES: ArticleMeta[] = [
     status: "draft",
   },
   {
+    slug: "svd",
+    title: "Singular Values",
+    subtitle: "Every matrix is a stretch in disguise",
+    date: "Summer 2026",
+    status: "draft",
+  },
+  {
     slug: "eigenvectors",
     title: "Eigenvectors",
     subtitle: "The vectors that refuse to turn",

@@ -23,6 +23,7 @@ export default defineConfig({
         eigenvectors: resolve(__dirname, "eigenvectors/index.html"),
         "cross-product": resolve(__dirname, "cross-product/index.html"),
         determinant: resolve(__dirname, "determinant/index.html"),
+        svd: resolve(__dirname, "svd/index.html"),
       },
     },
   },
