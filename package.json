@@ -1,7 +1,14 @@
 {
-  "name": "visualmath",
+  "name": "secantlabs",
   "private": true,
   "version": "0.0.1",
+  "description": "Secant Labs: Warp and the other interactive tools, the shared math engine, and the umbrella site.",
+  "homepage": "https://secantlabs.org",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/secantlabs/secantlabsmonorepo.git"
+  },
+  "license": "UNLICENSED",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -9,6 +16,7 @@
   "scripts": {
     "dev": "npm run dev -w apps/landing",
     "dev:warp": "npm run dev -w apps/warp",
+    "dev:lessons": "npm run dev -w apps/lessons",
     "build": "npm run build -w apps/landing && npm run build -w apps/warp",
     "test": "npm run test -w packages/engine"
   }

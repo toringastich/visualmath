@@ -1,0 +1,368 @@
+import WarpEmbed from "../WarpEmbed";
+import {
+  SVD_HOOK,
+  SVD_AXES,
+  SVD_TWOSTEP,
+  SVD_DECOMP,
+  SVD_DET,
+  SVD_RANK,
+  SVD_SPHERE,
+  SVD_BLANK,
+  WARP_URL,
+} from "../states";
+
+{/* Prose lives here — this file is the source of truth for the article.
+    Two rules if you rewrite a section. Keep the question before the panel, so
+    the reader has something to find out rather than something to confirm. And
+    when the text asks them to change a matrix, name the entry they should
+    click, not the quantity it stands for — the sandbox shows four boxes, not
+    σ₁ and σ₂. */}
+
+Take any 2×2 matrix you like — any four numbers at all — and ask what it does to
+the unit circle. The answer, every single time, is an ellipse. Never a peanut,
+never an egg, never a shape fatter at one end than the other.
+
+The panel below is a live copy of Warp; it plays itself once so you can watch the
+circle go, and then it's yours. Click any entry of `M` and put whatever you want
+in its place. See if you can produce something that isn't an ellipse.
+
+<WarpEmbed
+  state={SVD_HOOK}
+  caption="The dashed circle is where it started. Type new numbers into M — the ellipse follows."
+/>
+
+You won't manage it, and I want to dwell for a moment on how odd that is. A
+matrix is four entries you may set quite independently, which is a good deal of
+freedom, and yet whatever you do with that freedom the circle comes back an
+ellipse. Something is quietly limiting what a matrix is allowed to do.
+
+By the end of this piece you'll know what. On the way we'll meet the two numbers
+hidden inside every matrix that settle which ellipse you get. They are called the
+*singular values*, and they turn out to explain what the determinant has been
+measuring all along, to say how close a matrix is to being impossible to undo,
+and to let you look at four unhelpful numbers and see at a glance what they do.
+
+## The ellipse has two axes, and those are the numbers
+
+An ellipse is not a shapeless blob. It has a long direction and a short one, at
+right angles to each other, with a definite length along each. Tell me those two
+lengths and the angle they sit at and I can draw your ellipse exactly; there is
+nothing else about it to know.
+
+That is an encouraging thought, because it means the ellipse in the last panel is
+carrying only a few numbers' worth of information — and if we can find those
+numbers, we will have found what the matrix is really doing. The panel below is
+the same matrix with one row added, `svd(M)`, whose name will make sense shortly.
+It reports two numbers, σ₁ and σ₂. Decide what you think they are before you look
+at them; the orange and purple arrows are drawn to help.
+
+<WarpEmbed
+  state={SVD_AXES}
+  caption="σ₁ and σ₂ — and two arrows landing exactly on the ellipse's semi-axes."
+/>
+
+They are the semi-axes. σ₁ is how far the ellipse reaches along its long
+direction, σ₂ how far along its short one. Now drag the animation slider back to
+the beginning and look at what those two arrows were *before* the matrix got hold
+of them: a perpendicular pair of unit vectors sitting on the circle. So the
+matrix has taken that pair, kept it perpendicular, and stretched one arrow by σ₁
+and the other by σ₂.
+
+σ₁ has a second meaning worth pausing over. Every unit vector lands somewhere on
+that ellipse, and the furthest the ellipse reaches from the origin is σ₁ — so
+nothing anywhere in the plane gets magnified by more than σ₁, and the direction
+that achieves the maximum is the one the orange arrow started along. In the same
+way σ₂ is the least any direction is stretched, and everything else lands
+between the two.
+
+Before moving on, make `M` stretch a great deal in one direction and hardly at
+all in another, and watch σ₁ climb while σ₂ falls. Then see whether you can get
+σ₁ and σ₂ to be equal to each other. The matrices that manage it form a family
+with a name, and I'll leave that one for the end.
+
+## An obvious plan, and why it doesn't work
+
+A matrix stretches two perpendicular directions, then, and that is all it does.
+This suggests an appealingly simple way to build any matrix we like out of parts
+we already understand. First stretch — σ₁ along the horizontal, σ₂ along the
+vertical — which turns the circle into an ellipse. Then rotate that ellipse to
+whatever angle it needs to sit at. Two moves and we're finished.
+
+I think that is the right guess to make, and it's worth finding out exactly how
+it fails, because the repair turns out to be the whole idea.
+
+The panel below is that plan, assembled. `S` does the stretching, 2.5 along the
+horizontal and 1 along the vertical. `U` is a rotation. `C = U·S` applies `S`
+first and `U` second, so it stretches and then spins. There's an `svd(C)` row
+running underneath.
+
+Change `U` and `S` however you like — any rotation, any two stretches. Watch the
+two directions `svd(C)` reports, and see if you can get them to point anywhere
+interesting.
+
+<WarpEmbed
+  state={SVD_TWOSTEP}
+  caption="Stretch, then spin. Change anything you want; two things refuse to budge."
+/>
+
+They won't move. Whatever you type, `svd(C)` insists the stretched directions are
+`(1, 0)` and `(0, 1)` — the plain horizontal and vertical — and the line beneath
+them reads *Vᵀ spins 0°*, which is Warp telling you that a rotation you never
+asked for is sitting there doing nothing at all.
+
+The reason is worth saying slowly. A stretch by fixed amounts along the
+horizontal and vertical can only stretch the horizontal and the vertical; that
+is what it means for the stretch to be the first thing that happens. Rotating
+afterwards turns the finished ellipse, and it certainly changes where everything
+ends up, but it cannot reach back and change *which incoming directions* were the
+ones that got stretched. Stretch-then-spin therefore only ever produces matrices
+whose two special directions are the coordinate axes, and most matrices are not
+like that.
+
+Look back at the matrix we began with. Its σ₁ pointed along `(0.639, 0.77)`, a
+direction tilted some fifty degrees off the horizontal. No amount of fiddling
+with `U` and `S` will produce that matrix, and it isn't that we've chosen our
+numbers badly — the tilt is not a thing two moves can express.
+
+You can also see the limitation directly, without reading a single number, and I
+think this is the clearest way to feel it. Look at the **gridlines** in the panel.
+Whatever you type into `U` and `S`, the warped grid stays a grid of *rectangles*
+— tilted at some angle, with cells longer one way than the other, but always
+meeting at right angles. Try to shear it. Try to get the cells to lean into
+parallelograms. You can't, and the reason is the same one as before: the grid
+directions start out perpendicular, a stretch along those very directions leaves
+them perpendicular, and a rotation turns the whole picture without ever changing
+the angle between two lines. Perpendicular in, perpendicular out.
+
+That is a real restriction, because most matrices *do* lean their gridlines over.
+When we get to the three-move version in a moment, the first thing to look at is
+the grid: with a rotation in front, the cells can lean at any angle you please,
+and so the three-move version can reach matrices the two-move version cannot.
+
+Two smaller angles on the same obstruction, if you'd like them. The first is
+simply to count. A 2×2 matrix is four independent entries; a rotation contributes
+one number, its angle, and a stretch contributes two, so stretch-then-spin offers
+three adjustable numbers where four are wanted. The one we're short of is exactly
+the tilt of the incoming axes.
+
+The second is the arithmetic behind those rectangular gridlines. In the panel `C`
+works out to `[1.5 −0.8; 2 0.6]`, whose columns are `(1.5, 2)` and `(−0.8, 0.6)`,
+and those two are at right angles — as they must be, since the columns of a matrix
+are just where î and ĵ land, and î and ĵ are the grid directions we've been
+watching. So consider the shear `[1 1; 0 1]`, whose columns `(1, 0)` and `(1, 1)`
+are plainly not perpendicular. It is out of reach, and so is very nearly every
+other matrix.
+
+## Rotate, stretch, rotate
+
+The repair is more or less forced on us now. If the trouble is that the incoming
+axes are tilted while the stretch can only work along the coordinate axes, then
+we ought to rotate the plane first, bringing those tilted axes into line with the
+horizontal and vertical, and stretch only afterwards.
+
+Three moves, then. A rotation whose only job is to swing the two special
+directions onto the coordinate axes — the move the two-step plan was missing.
+Then the stretch, σ₁ along the horizontal and σ₂ along the vertical and nothing
+else. Then a second rotation, carrying the finished ellipse into its proper
+position.
+
+In symbols that is `M = U·Σ·Vᵀ`, with `Vᵀ` the opening rotation, `Σ` the stretch
+and `U` the closing rotation. Two angles and two stretches: four adjustable
+numbers for four matrix entries, which is precisely the right count. It's called
+the *singular value decomposition*.
+
+The panel below has one taken apart. `U` and `Vt` are rotations. `S` is the
+stretch, holding σ₁ = 3 in its top-left corner and σ₂ = 1 in its bottom-right,
+with zeros in the other two places — those two corner entries are the only
+numbers in the whole business that aren't part of a rotation, and it's worth
+remembering where they live, because we'll be editing them later. `C = U·S·Vt` is
+the three of them composed.
+
+Warp animates a product one factor at a time, right to left, so pressing play
+applies `Vt`, then `S`, then `U`. Before you press it, decide what each stage
+will look like — and in particular, what does the first stage do to a circle?
+
+<WarpEmbed state={SVD_DECOMP} height={520} />
+
+Look at the gridlines first, since that was the promise. They lean: the cells are
+parallelograms now, not rectangles.
+
+It's worth seeing exactly where the lean comes from, because it is the whole
+difference between two moves and three. The stretch only ever pulls along the
+coordinate axes. In the two-move version the gridlines were already lying along
+those axes when the pull arrived, so it simply made them longer and shorter and
+left them as square as it found them. Put a rotation in front and the gridlines
+arrive *off* the axes instead — and a pull along x and y acts unevenly on a line
+lying diagonally across them, which tips it. The right angle is the casualty, and
+that lost right angle is precisely the freedom the two-move version never had.
+
+As for the animation, the first stage appears to do nothing, which is exactly
+right: a rotation carries the circle onto itself, so there is nothing to see.
+Something has happened
+underneath, though, and you can catch it in the act. Drag the slider back to the
+very start and notice that the two σ arrows sit at an angle; then drag forward to
+the end of the first stage and watch them arrive on the horizontal and the
+vertical. That swing is the entire content of `Vᵀ`. It has spent a third of the
+transformation buying us the right to perform a plain, boring stretch — which is
+the second stage, where the ellipse is finally born. The third stage merely turns
+the result to face the right way.
+
+The ellipse we began with was never mysterious, then. Every matrix is a stretch
+along two perpendicular directions wearing a pair of rotations as a disguise. The
+four entries look like four unrelated numbers, but they are really encoding two
+angles and two lengths — and a circle stretched along perpendicular axes is an
+ellipse, with no room left over for it to be anything else.
+
+Take the disguise off yourself. Clicking the small circle to the left of `U`, or
+of `S`, or of `Vt`, makes just that one factor warp the plane, so you can look at
+each in isolation; `S` on its own is the naked axis-aligned ellipse, before any
+disguise at all. Then click back on `C` to reassemble it. (Isolating a factor
+also brings back the basis vectors and the shaded unit square, which these panels
+start with switched off. A second click on a matrix's dot strips it back to
+gridlines, and a third turns it off.)
+
+And look at what `C` actually is: `1.92`, `0.44`, `1.56`, `1.92`. Handed those
+four numbers cold you would have no idea what they did. They are a rotation of
+−36.9°, a stretch by 3 and by 1, and a rotation of 53.1°.
+
+## Where the determinant went
+
+You may already know the determinant as the factor by which a matrix scales area:
+hand it a region and the region comes back `det(M)` times larger. If that's new,
+take it as a definition for the next few paragraphs, since it's all we need.
+
+We're now in a position to say where the number comes from. The unit circle has
+area π. It lands on an ellipse with semi-axes σ₁ and σ₂, and an ellipse with
+semi-axes *a* and *b* has area π·a·b. The area has been multiplied by σ₁·σ₂, and
+so `det(M) = ±σ₁·σ₂`.
+
+The determinant is not a separate fact about a matrix, then. It is the *product*
+of the singular values — one number that multiplies the two stretches together
+and, in the process, forgets everything else about them. What gets forgotten will
+matter a great deal in the next section.
+
+First the ± sign, which we haven't earned. Neither a rotation nor a stretch by
+positive amounts can turn the plane over, so if a matrix *does* turn the plane
+over, where is the reversal hiding? The panel below has both `svd(M)` and
+`det(M)`, agreeing to begin with: σ₁ = 3, σ₂ = 1, det = 3. Change `M` until
+`det(M)` comes out negative — putting a minus sign in front of both entries of
+the bottom row is the quickest route — and keep an eye on the last line of the
+`svd` row while you do it. Guess first: will the reversal appear in the stretch,
+in `Vᵀ`, or in `U`?
+
+<WarpEmbed state={SVD_DET} />
+
+The σ values stay resolutely positive, as they must, being lengths. `Vᵀ` remains
+an ordinary rotation. The reversal turns up in `U`, whose line now ends *and
+flips*: the closing step doesn't merely turn the ellipse, it turns it over.
+
+That is partly a choice Warp has made on your behalf, and it seems only fair to
+admit it. The decomposition isn't unique — there is more than one way to divide
+the work between the two rotations — and Warp always arranges for `Vᵀ` to be a
+plain rotation, which forces any reversal into `U`, where you can find it in one
+predictable place.
+
+So the determinant is telling you two things at once. How much the area changed,
+which is the product of the stretches; and whether the plane was turned over,
+which is the sign contributed by the closing rotation.
+
+## How close is close to broken?
+
+Now for somewhere the singular values can go and the determinant cannot follow.
+
+The familiar fact about invertibility is that a matrix can be undone exactly when
+its determinant isn't zero, and that's true. But it's a yes-or-no answer, and
+what you generally want is a dial rather than a switch. A matrix that squashes the
+plane down to very nearly nothing is, strictly speaking, invertible, and
+practically speaking a disaster: undoing it means dividing by that very nearly
+nothing.
+
+The panel below starts with σ₂ set to 0.2, so the ellipse is already a sliver,
+though `det(C)` reads 0.6 and `inv(C)` hands back a perfectly respectable
+inverse. Two things to do, in order.
+
+Recall that `S` keeps the two stretches in its corners, σ₁ in the top-left and σ₂
+in the bottom-right. Begin, then, by clicking the **bottom-right entry of `S`** —
+the `0.2` — and typing `0` in its place. The ellipse collapses onto a line
+segment, and that segment is where the whole plane has gone: two dimensions
+crushed into one. `det(C)` drops to zero, `inv(C)` gives up, and `svd(C)` adds a
+line telling you the rank has fallen to 1.
+
+Then put the `0.2` back and try something less obvious. Type `30` over the `3` in
+`S`'s **top-left** entry, and `0.1` over the `0.2` in the **bottom-right**, so
+that σ₁ = 30 and σ₂ = 0.1. Before you look at `det(C)`, predict what it's going
+to say.
+
+<WarpEmbed state={SVD_RANK} height={500} />
+
+It says 3 — precisely the determinant of the healthy stretch-by-3-and-1 from the
+decomposition panel. A determinant of 3 sounds as though nothing is wrong. But
+this matrix takes the circle to a splinter three hundred times longer than it is
+wide; it is very nearly singular, and the determinant has no way of saying so,
+because all it ever reports is the product, and 30 × 0.1 is as respectable a 3 as
+3 × 1 ever was. σ₂ says it immediately: 0.1, and shrinking.
+
+The ratio σ₁/σ₂ is called the *condition number*, and it's the quantity people
+who compute with matrices for a living actually keep an eye on. It is the honest
+answer to *how close is this matrix to destroying information*, and it is
+invisible to the determinant. The determinant tells you whether a matrix can be
+undone. The singular values tell you how much trouble you're in.
+
+## One more dimension
+
+None of the argument needed the plane. In three dimensions the circle becomes the
+unit **sphere**, and it lands on an **ellipsoid** — a squashed ball with three
+perpendicular axes and three singular values.
+
+Drag inside the panel to turn it around. The story holds in every particular:
+`Vᵀ` spins the sphere, which as before you can't see happening, the stretch pulls
+it out along three axes, and `U` turns the result. So does the arithmetic —
+multiply the three σ values and you get `det(M)`, which is 3, the volume of the
+ellipsoid over the volume of the ball. (The row rounds each σ to three decimals,
+so doing that multiplication by hand lands a whisker under 3.)
+
+Then flatten it, which takes exactly one keystroke. Change the **middle entry of
+`M`'s bottom row** from `0` to `3`, so that the bottom row reads `1 3 1` — the
+sum of the two rows above it. A row that is the sum of the others brings no new
+direction with it, and space obliges by losing one: σ₃ falls to exactly 0, the
+`svd` row reports rank 2, and the ellipsoid flattens into a disc. Three
+dimensions of space, living on a sheet.
+
+If you'd like to lose another, set the whole middle row to `1 1 0` as well. Every
+row is now a multiple of `1 1 0`, only one direction survives, and the disc
+becomes a line.
+
+<WarpEmbed state={SVD_SPHERE} height={540} zoom={0.72} />
+
+## Your turn
+
+An empty sandbox. Add a matrix from the **+** menu, then use an expression row's
+gear button to drop in `circle()` and `svd( )`. If Warp is new to you, the
+**Tutorial** button gives a short tour.
+
+Some things worth going after:
+
+- **Make σ₁ and σ₂ exactly equal.** The ellipse becomes a circle again, which is
+  to say the matrix stretches every direction by the same amount. What must such
+  a matrix look like? There's a whole family of them, and the obvious one is not
+  the only member.
+- **Stretch by 3 along the horizontal, then turn the result 45°.** This is the
+  easy case — the one the two-move plan could already handle, because the
+  direction being stretched is the horizontal to begin with and no opening
+  rotation is needed. Then try the harder version: stretch by 3 along a line
+  tilted 30° from the horizontal, and see what `Vᵀ` has to become.
+- **Build the shear `[1 1; 0 1]` out of `U·S·Vt`** and read off its singular
+  values. They aren't pretty numbers, which is rather the point: a matrix made
+  entirely of ones and zeros is secretly a rotation, an irrational stretch, and
+  another rotation.
+- **Find a matrix whose σ₁ is enormous and σ₂ tiny, but whose determinant is
+  exactly 1.** Area perfectly preserved; information very nearly destroyed.
+- **Go into 3D and arrange for exactly one singular value to be zero,** so that
+  three dimensions of space live on a flat sheet. Then ask `inv(M)` what it makes
+  of that.
+
+<WarpEmbed state={SVD_BLANK} height={560} tutorial />
+
+<p className="article-cta">
+  <a href={WARP_URL}>Open the full sandbox →</a>
+</p>

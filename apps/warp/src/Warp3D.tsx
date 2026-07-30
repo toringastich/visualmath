@@ -15,7 +15,7 @@ import GerminateCredit from "./components/GerminateCredit";
 import { FEEDBACK_URL } from "./config";
 import { trackOnce } from "./analytics";
 import { useStickyErrors } from "./useStickyErrors";
-import { apply3, IDENTITY3, lerp3, svd3, type Mat3 } from "@vm/engine/matrix3";
+import { apply3, IDENTITY3, lerp3, svd3, type Mat3 } from "@secantlabs/engine/matrix3";
 import {
   evaluate,
   ExprError,
@@ -26,7 +26,7 @@ import {
   parseBinding,
   RESERVED_NAMES,
   type Env,
-} from "@vm/engine/expr";
+} from "@secantlabs/engine/expr";
 import {
   cellsToPMat3,
   cellsToPVec3,

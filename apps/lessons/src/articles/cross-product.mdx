@@ -1,0 +1,69 @@
+import WarpEmbed from "../WarpEmbed";
+import { CROSS_FLAT, CROSS_UP, CROSS_TILT, WARP_URL } from "../states";
+
+{/* Draft — tighten or personalize freely; structure mirrors the
+    eigenvectors article. */}
+
+The cross product is usually taught as a formula with a mnemonic — a
+determinant of a strange matrix with î, ĵ, k̂ jammed into the top row. The
+formula is true. It is also the least illuminating possible answer to the
+question the cross product actually addresses, which is about a *shape*.
+
+## Two vectors span a parallelogram
+
+Here are v = (2, 1, 0) and w = (−1, 2, 0), both lying flat in the xy-plane.
+Together they span a parallelogram — the shaded patch between them. Drag to
+orbit the scene and look at it from every side.
+
+<WarpEmbed
+  state={CROSS_FLAT}
+  caption="v and w span a parallelogram, flat in the xy-plane. Drag to orbit."
+  height={480}
+/>
+
+Every question the cross product answers starts with this patch: **how big is
+it, and which way does it face?**
+
+## One vector answers both
+
+The row u = cross(v, w) computes (0, 0, 5): a vector pointing straight up,
+perpendicular to both v and w — perpendicular, in fact, to the whole patch.
+
+<WarpEmbed
+  state={CROSS_UP}
+  caption="u = cross(v, w) = (0, 0, 5), perpendicular to the patch — and norm(u) = 5 is exactly its area."
+  height={480}
+/>
+
+Its length is no accident. norm(u) = 5 is *exactly the parallelogram's area*.
+And its direction follows the right-hand rule: curl your fingers from v
+toward w, and your thumb points along u. One vector, both answers — size as
+length, orientation as direction.
+
+## It follows the parallelogram
+
+Tilt w out of the plane — w = (−1, 2, 1) — and the parallelogram tilts with
+it. The cross product follows: u = (1, −2, 5) leans exactly enough to stay
+perpendicular. The row dot(v, u) = 0 is the receipt. Perpendicularity isn't a
+coincidence of the first example; it's built into the definition.
+
+<WarpEmbed
+  state={CROSS_TILT}
+  caption="Tilt w out of the plane and u leans to stay perpendicular — dot(v, u) = 0, always. Edit w's entries and watch."
+  height={480}
+/>
+
+## Now it's yours
+
+Two experiments to close the loop:
+
+- Make v and w **parallel** and the parallelogram collapses to a line — the
+  cross product returns the zero vector. No patch, no normal.
+- Make them **perpendicular unit vectors** and the area is exactly 1 — the
+  cross product of two axes is the third axis.
+
+The cross product is the parallelogram, wearing a vector costume.
+
+<p className="article-cta">
+  <a href={WARP_URL}>Open the Warp sandbox →</a>
+</p>

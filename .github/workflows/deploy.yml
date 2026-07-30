@@ -5,8 +5,18 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Publishes the built landing page to the gh-pages branch, which GitHub
-# Pages serves automatically (auto-enabled when the branch first appears).
+# Publishes the built landing page to the gh-pages branch, which GitHub Pages
+# serves automatically (auto-enabled when the branch first appears).
+#
+# Only apps/landing/dist is published, and that is a constraint rather than an
+# omission: one Pages site takes one custom domain, and apps/warp/public/CNAME
+# asks for a different one than apps/landing/public/CNAME. Publishing both into
+# this branch would let whichever CNAME landed at the root decide the domain for
+# both sites. apps/lessons is likewise absent -- its judged SoME URL is served
+# by the standalone warp-lessons repo until Aug 31.
+#
+# Nothing here names an owner: ${GITHUB_REPOSITORY} and the built-in token both
+# follow the repo, so the transfer to the secantlabs org needs no edit.
 permissions:
   contents: write
 
