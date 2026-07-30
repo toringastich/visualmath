@@ -7,7 +7,7 @@ import {
   jHat,
   type Mat2,
   type Vec2,
-} from "@vm/engine/matrix";
+} from "@secantlabs/engine/matrix";
 import { type MatrixView } from "../rows";
 
 interface View {

@@ -9,7 +9,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
 import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeometry.js";
-import { apply3, col3, type Mat3, type Vec3 } from "@vm/engine/matrix3";
+import { apply3, col3, type Mat3, type Vec3 } from "@secantlabs/engine/matrix3";
 import { type MatrixView } from "../rows";
 
 export interface Vector3Drawable {

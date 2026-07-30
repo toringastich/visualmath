@@ -26,7 +26,7 @@ import {
   svd,
   type Mat2,
   type Vec2,
-} from "@vm/engine/matrix";
+} from "@secantlabs/engine/matrix";
 import {
   additiveTerms,
   evaluate,
@@ -41,7 +41,7 @@ import {
   type Env,
   type Node,
   type Value,
-} from "@vm/engine/expr";
+} from "@secantlabs/engine/expr";
 import {
   cellsToPMat2,
   cellsToPVec2,

@@ -11,9 +11,9 @@ import {
   type PMat3,
   type PVec2,
   type PVec3,
-} from "@vm/engine/expr";
-import * as P from "@vm/engine/poly";
-import { type Poly } from "@vm/engine/poly";
+} from "@secantlabs/engine/expr";
+import * as P from "@secantlabs/engine/poly";
+import { type Poly } from "@secantlabs/engine/poly";
 
 export type RowId = string;
 export type Mode = "2d" | "3d";

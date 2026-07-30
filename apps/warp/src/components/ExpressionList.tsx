@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { parseBinding } from "@vm/engine/expr";
+import { parseBinding } from "@secantlabs/engine/expr";
 import {
   type Mode,
   type Row,

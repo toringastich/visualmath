@@ -1,6 +1,6 @@
 /** Shared display formatting for numbers and engine values. */
-import { type Value } from "@vm/engine/expr";
-import * as P from "@vm/engine/poly";
+import { type Value } from "@secantlabs/engine/expr";
+import * as P from "@secantlabs/engine/poly";
 
 export function fmt(n: number): string {
   const r = Math.round(n * 1e6) / 1e6;
