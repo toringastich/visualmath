@@ -10,6 +10,20 @@ The eigenvectors article is the entry for the **non-video category of
 3Blue1Brown's Summer of Math Exposition 2026** (deadline Aug 15; no deploys
 during peer review Aug 16–30 — the entry URL must stay frozen).
 
+> **This copy does not deploy — not yet.** The source lives here now, but the
+> live site is still published from the standalone `toringastich/warp-lessons`
+> repo, because the judged URL above can only be produced by that repo's Pages
+> site. Nothing here is wired into the monorepo's build or deploy scripts, and
+> `vite.config.ts` keeps `base: "/warp-lessons/"` to match.
+>
+> Two things must therefore stay untouched until **Aug 31**: that repo's
+> `gh-pages` branch, and **warp.us.com** — `WarpEmbed` iframes it and pins
+> `e.origin` to it, so every scene in the judged article is a live frame of
+> that origin. Moving or redirecting either one breaks the entry mid-judging.
+>
+> After Aug 30: point `base` at `/lessons/`, add lessons to the root `build`
+> script and the deploy workflow, and let the old URL redirect.
+
 ## How articles work
 
 Articles are MDX (`src/articles/*.mdx`): markdown prose with
