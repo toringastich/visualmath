@@ -15,7 +15,7 @@ import GerminateCredit from "./components/GerminateCredit";
 import { FEEDBACK_URL } from "./config";
 import { trackOnce } from "./analytics";
 import { useStickyErrors } from "./useStickyErrors";
-import { apply3, IDENTITY3, lerp3, type Mat3 } from "@vm/engine/matrix3";
+import { apply3, IDENTITY3, lerp3, svd3, type Mat3 } from "@vm/engine/matrix3";
 import {
   evaluate,
   ExprError,
@@ -33,12 +33,15 @@ import {
   GRAPH_COLORS,
   newId,
   nextName,
+  SHAPE_COLOR,
+  SVD_COLORS,
+  type ResultLine,
   type Row,
   type RowId,
   type RowKind,
   type RowResult,
 } from "./rows";
-import { fmt, valueToText } from "./format";
+import { fmt, fmt3, SUBS, valueToText } from "./format";
 import { type SandboxProps } from "./App";
 
 // Hide the Feedback/Tutorial chrome when this view is embedded in an iframe.
@@ -63,6 +66,8 @@ export default function Warp3D({
   setRows,
   activeId,
   setActiveId,
+  gridOnly,
+  setGridOnly,
   onUndo,
   onRedo,
   canUndo,
@@ -80,6 +85,7 @@ export default function Warp3D({
     const colorOf = new Map<RowId, string>();
     const targetOf = new Map<RowId, Mat3>(); // rows that can drive the warp
     const warpables = new Set<RowId>();
+    const svdRows = new Set<RowId>();
     const sliders = new Map<RowId, number>();
     const ridingVectors = new Map<RowId, Vector3Drawable>();
     const env: Env = new Map();
@@ -187,6 +193,55 @@ export default function Warp3D({
         if (ast.t === "call" && ast.fn === "eigen")
           throw new ExprError("eigen isn't supported in 3D yet");
 
+        if (ast.t === "call" && ast.fn === "svd") {
+          if (binding) throw new ExprError("svd(…) can't be assigned to a name");
+          const mv = evaluate(ast.args[0], env);
+          const mnum = mv.kind === "matrix3" ? numMat3(mv.value) : null;
+          if (!mnum)
+            throw new ExprError("svd expects a matrix with numeric entries");
+          const s = svd3(mnum);
+          svdRows.add(row.id);
+          const lines: ResultLine[] = s.sigma.map((sg, i) => ({
+            text:
+              `σ${SUBS[i]} = ${fmt3(sg)}   along  ` +
+              `(${fmt3(s.v[i].x)}, ${fmt3(s.v[i].y)}, ${fmt3(s.v[i].z)})`,
+            color: SVD_COLORS[i],
+          }));
+          const zeros = s.sigma.filter((sg) => sg <= 1e-12).length;
+          if (zeros > 0)
+            lines.push({
+              text: `rank ${3 - zeros} — space collapses to ${
+                3 - zeros === 2 ? "a plane" : 3 - zeros === 1 ? "a line" : "a point"
+              }`,
+            });
+          else if (s.flipped)
+            lines.push({ text: "U flips orientation (det M < 0)" });
+          results.set(row.id, { lines });
+          if (row.shown) {
+            s.v.forEach((vi, i) => {
+              drawables.push({
+                kind: "vector",
+                vec: vi,
+                color: SVD_COLORS[i],
+                ride: true,
+                label: `σ${SUBS[i]} = ${fmt3(s.sigma[i])}`,
+              });
+            });
+          }
+          continue;
+        }
+
+        if (ast.t === "call" && ast.fn === "sphere") {
+          if (binding)
+            throw new ExprError("sphere() can't be assigned to a name");
+          colorOf.set(row.id, SHAPE_COLOR);
+          if (row.shown) drawables.push({ kind: "sphere", color: SHAPE_COLOR });
+          continue;
+        }
+
+        if (ast.t === "call" && ast.fn === "circle")
+          throw new ExprError("circle() only works in 2D — try sphere()");
+
         const value = evaluate(ast, env);
         const isNumericLiteral =
           ast.t === "num" || (ast.t === "neg" && ast.a.t === "num");
@@ -276,7 +331,7 @@ export default function Warp3D({
       }
     }
 
-    return { drawables, results, colorOf, targetOf, warpables, sliders };
+    return { drawables, results, colorOf, targetOf, warpables, svdRows, sliders };
   }, [rows, activeId]);
 
   useStickyErrors("3d", rows, scene.results);
@@ -378,11 +433,21 @@ export default function Warp3D({
     }
   };
 
+  // Clicking the active warp again steps down to lattice-only, then off —
+  // same three-step cycle as the 2D sandbox.
   const toggleShown = (id: RowId) => {
     const row = rows.find((r) => r.id === id);
     if (!row) return;
     if (row.kind === "matrix" || scene.warpables.has(id)) {
-      setActiveId((prev) => (prev === id ? null : id));
+      if (activeId !== id) {
+        setActiveId(id);
+        setGridOnly(false);
+      } else if (!gridOnly) {
+        setGridOnly(true);
+      } else {
+        setActiveId(null);
+        setGridOnly(false);
+      }
       setPlaying(false);
       setT(1);
     } else {
@@ -461,6 +526,8 @@ export default function Warp3D({
         colorOf={scene.colorOf}
         warpables={scene.warpables}
         eigenRows={EMPTY_SET}
+        svdRows={scene.svdRows}
+        gridOnly={gridOnly}
         sliders={scene.sliders}
         projRows={EMPTY_SET}
         stageNamesOf={EMPTY_MAP}
@@ -485,7 +552,9 @@ export default function Warp3D({
       <main className="stage">
         <TransformCanvas3D
           warp={warp}
-          showActiveMatrix={activeTarget !== null}
+          matrixView={
+            activeTarget === null ? "none" : gridOnly ? "grid" : "full"
+          }
           drawables={scene.drawables}
         />
         {!EMBEDDED && (

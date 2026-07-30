@@ -23,6 +23,7 @@ import {
   IDENTITY,
   lerp,
   multiply,
+  svd,
   type Mat2,
   type Vec2,
 } from "@vm/engine/matrix";
@@ -48,6 +49,8 @@ import {
   GRAPH_COLORS,
   newId,
   nextName,
+  SHAPE_COLOR,
+  SVD_COLORS,
   type Mode,
   type ResultLine,
   type Row,
@@ -55,7 +58,7 @@ import {
   type RowKind,
   type RowResult,
 } from "./rows";
-import { fmt, valueToText } from "./format";
+import { degrees, fmt, fmt3, SUBS, valueToText } from "./format";
 import { trackOnce } from "./analytics";
 import { useStickyErrors } from "./useStickyErrors";
 import {
@@ -69,14 +72,6 @@ import {
 const Warp3D = lazy(() => import("./Warp3D"));
 
 const ANIM_MS = 1400; // per animation stage
-
-const SUBS = ["₁", "₂"];
-
-/** Rounder display for eigen output, where values are usually irrational. */
-function fmt3(n: number): string {
-  const r = Math.round(n * 1e3) / 1e3;
-  return Object.is(r, -0) ? "0" : String(r);
-}
 
 /**
  * Scale a unit eigenvector so its smallest nonzero component is ±1 — reads
@@ -121,6 +116,7 @@ function isBlankDoc(rows: Row[]): boolean {
 function useUndoableDoc(initial: Doc) {
   const [rows, setRows] = useState<Row[]>(initial.rows);
   const [activeId, setActiveId] = useState<RowId | null>(initial.active);
+  const [gridOnly, setGridOnly] = useState(initial.gridOnly);
   const past = useRef<Doc[]>([]);
   const future = useRef<Doc[]>([]);
   const current = useRef<Doc>(initial);
@@ -128,8 +124,8 @@ function useUndoableDoc(initial: Doc) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [, bump] = useState(0);
 
-  const live = useRef<Doc>({ rows, active: activeId });
-  live.current = { rows, active: activeId };
+  const live = useRef<Doc>({ rows, active: activeId, gridOnly });
+  live.current = { rows, active: activeId, gridOnly };
 
   const commit = () => {
     timer.current = null;
@@ -148,13 +144,14 @@ function useUndoableDoc(initial: Doc) {
     }
     if (
       rows === current.current.rows &&
-      activeId === current.current.active
+      activeId === current.current.active &&
+      gridOnly === current.current.gridOnly
     )
       return;
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(commit, COMMIT_MS);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, activeId]);
+  }, [rows, activeId, gridOnly]);
 
   const flush = () => {
     if (!timer.current) return;
@@ -166,6 +163,7 @@ function useUndoableDoc(initial: Doc) {
     restoring.current = true;
     setRows(doc.rows);
     setActiveId(doc.active);
+    setGridOnly(doc.gridOnly);
     bump((n) => n + 1);
   };
   const undo = () => {
@@ -188,6 +186,8 @@ function useUndoableDoc(initial: Doc) {
     setRows,
     activeId,
     setActiveId,
+    gridOnly,
+    setGridOnly,
     undo,
     redo,
     canUndo: past.current.length > 0 || timer.current !== null,
@@ -217,8 +217,8 @@ export default function App() {
   const encode = () =>
     encodeState(
       mode,
-      { rows: doc2.rows, active: doc2.activeId },
-      { rows: doc3.rows, active: doc3.activeId },
+      { rows: doc2.rows, active: doc2.activeId, gridOnly: doc2.gridOnly },
+      { rows: doc3.rows, active: doc3.activeId, gridOnly: doc3.gridOnly },
     );
 
   // The URL hash and localStorage mirror the current state (debounced), so
@@ -235,7 +235,15 @@ export default function App() {
     }, COMMIT_MS);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, doc2.rows, doc2.activeId, doc3.rows, doc3.activeId]);
+  }, [
+    mode,
+    doc2.rows,
+    doc2.activeId,
+    doc2.gridOnly,
+    doc3.rows,
+    doc3.activeId,
+    doc3.gridOnly,
+  ]);
 
   // Cmd/Ctrl+Z undo, Shift+Cmd+Z / Ctrl+Y redo — on the visible document.
   const activeDocRef = useRef(doc2);
@@ -347,6 +355,8 @@ export default function App() {
     setRows: doc.setRows,
     activeId: doc.activeId,
     setActiveId: doc.setActiveId,
+    gridOnly: doc.gridOnly,
+    setGridOnly: doc.setGridOnly,
     onUndo: doc.undo,
     onRedo: doc.redo,
     canUndo: doc.canUndo,
@@ -379,6 +389,8 @@ export interface SandboxProps {
   setRows: Dispatch<SetStateAction<Row[]>>;
   activeId: RowId | null;
   setActiveId: Dispatch<SetStateAction<RowId | null>>;
+  gridOnly: boolean;
+  setGridOnly: Dispatch<SetStateAction<boolean>>;
   onUndo: () => void;
   onRedo: () => void;
   canUndo: boolean;
@@ -394,6 +406,8 @@ function Warp2D({
   setRows,
   activeId,
   setActiveId,
+  gridOnly,
+  setGridOnly,
   onUndo,
   onRedo,
   canUndo,
@@ -415,6 +429,7 @@ function Warp2D({
     const stageNamesOf = new Map<RowId, string[]>();
     const warpables = new Set<RowId>(); // expr rows that can drive the warp
     const eigenRows = new Set<RowId>();
+    const svdRows = new Set<RowId>();
     const sliders = new Map<RowId, number>(); // scalar bindings -> current value
     const projRows = new Set<RowId>(); // top-level proj(v, w) rows (animatable)
     const ridingVectors = new Map<RowId, VectorDrawable>();
@@ -614,6 +629,60 @@ function Warp2D({
           continue;
         }
 
+        if (ast.t === "call" && ast.fn === "svd") {
+          if (binding) throw new ExprError("svd(…) can't be assigned to a name");
+          const mv = evaluate(ast.args[0], env);
+          const mnum = mv.kind === "matrix" ? numMat2(mv.value) : null;
+          if (!mnum)
+            throw new ExprError("svd expects a matrix with numeric entries");
+          const s = svd(mnum);
+          svdRows.add(row.id);
+          // Each σ with the input direction it stretches. The closing line
+          // reads the whole decomposition off in one go: because V is
+          // normalized to a pure rotation, Vᵀ is always a plain spin and any
+          // orientation flip lands in U.
+          const lines: ResultLine[] = s.sigma.map((sg, i) => ({
+            text: `σ${SUBS[i]} = ${fmt3(sg)}   along  (${fmt3(s.v[i].x)}, ${fmt3(s.v[i].y)})`,
+            color: SVD_COLORS[i],
+          }));
+          lines.push({
+            text:
+              `Vᵀ spins ${degrees(-s.vAngle)}, Σ stretches, ` +
+              `U spins ${degrees(s.uAngle)}${s.flipped ? " and flips" : ""}`,
+          });
+          if (s.sigma[1] <= 1e-12)
+            lines.push({ text: "σ₂ = 0 — rank 1: the plane collapses to a line" });
+          results.set(row.id, { lines });
+          if (row.shown) {
+            s.v.forEach((vi, i) => {
+              // A unit vector along each input axis, riding the warp: it starts
+              // perpendicular on the unit circle and lands on σ·u, a semi-axis
+              // of the ellipse. No fixed guide line here — unlike an
+              // eigen-direction, an input axis isn't invariant, so drawing it
+              // across the warped picture would claim something false.
+              drawables.push({
+                kind: "vector",
+                vec: vi,
+                color: SVD_COLORS[i],
+                ride: true,
+                label: `σ${SUBS[i]} = ${fmt3(s.sigma[i])}`,
+              });
+            });
+          }
+          continue;
+        }
+
+        if (ast.t === "call" && ast.fn === "circle") {
+          if (binding) throw new ExprError("circle() can't be assigned to a name");
+          colorOf.set(row.id, SHAPE_COLOR);
+          if (row.shown)
+            drawables.push({ kind: "circle", color: SHAPE_COLOR, ghost: true });
+          continue;
+        }
+
+        if (ast.t === "call" && ast.fn === "sphere")
+          throw new ExprError("sphere() only works in 3D — try circle()");
+
         const value = evaluate(ast, env); // env is fully populated already
         // A name bound to a plain number ("a = 1.5") gets a slider instead of
         // a redundant "= 1.5" result line.
@@ -753,6 +822,7 @@ function Warp2D({
       stageNamesOf,
       warpables,
       eigenRows,
+      svdRows,
       sliders,
       projRows,
     };
@@ -874,12 +944,22 @@ function Warp2D({
 
   // Toggle a row's graph on/off. Warp sources (matrices and matrix-valued
   // expressions) share a single "active warp" slot, so turning one on turns
-  // any other off automatically.
+  // any other off automatically — and clicking the one that's already on
+  // steps down through gridlines-only before switching off, so a scene can be
+  // stripped to just the warped grid without any extra controls.
   const toggleShown = (id: RowId) => {
     const row = rows.find((r) => r.id === id);
     if (!row) return;
     if (row.kind === "matrix" || scene.warpables.has(id)) {
-      setActiveId((prev) => (prev === id ? null : id));
+      if (activeId !== id) {
+        setActiveId(id);
+        setGridOnly(false);
+      } else if (!gridOnly) {
+        setGridOnly(true);
+      } else {
+        setActiveId(null);
+        setGridOnly(false);
+      }
       setPlaying(false);
       setT(1);
     } else {
@@ -983,6 +1063,8 @@ function Warp2D({
         colorOf={scene.colorOf}
         warpables={scene.warpables}
         eigenRows={scene.eigenRows}
+        svdRows={scene.svdRows}
+        gridOnly={gridOnly}
         sliders={scene.sliders}
         projRows={scene.projRows}
         stageNamesOf={scene.stageNamesOf}
@@ -1007,7 +1089,9 @@ function Warp2D({
       <main className="stage">
         <TransformCanvas
           warp={warp}
-          showActiveMatrix={activeStages !== null}
+          matrixView={
+            activeStages === null ? "none" : gridOnly ? "grid" : "full"
+          }
           drawables={scene.drawables}
           projT={t}
         />

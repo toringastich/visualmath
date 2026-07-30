@@ -42,7 +42,9 @@ const STEPS: TourStep[] = [
     title: "Show and hide",
     body:
       "Each dot toggles its object on the graph, Desmos-style. Matrices " +
-      "share one warp slot — turning one on turns the others off.",
+      "share one warp slot — turning one on turns the others off. Click the " +
+      "one that's on again for warped gridlines only, without the basis " +
+      "vectors, then once more to switch it off.",
   },
   {
     target: '[data-tour-kind="expr"]',

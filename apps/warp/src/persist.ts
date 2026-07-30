@@ -14,6 +14,12 @@ import { newId, type Mode, type Row, type RowId } from "./rows";
 export interface Doc {
   rows: Row[];
   active: RowId | null;
+  /**
+   * Show the active matrix as warped gridlines only — no basis vectors, no
+   * unit square/cube. Lets a scene about a shape (an ellipse, an ellipsoid)
+   * lose the furniture that would otherwise crowd it.
+   */
+  gridOnly: boolean;
 }
 
 export const LS_KEY = "warp:state";
@@ -26,6 +32,7 @@ type SavedRow =
 interface SavedDoc {
   rows: SavedRow[];
   active: number | null; // index into rows
+  g?: boolean; // gridOnly (omitted when false, the default)
 }
 interface SavedState {
   v: 1;
@@ -67,7 +74,11 @@ function docToSaved(doc: Doc): SavedDoc {
     doc.active === null
       ? null
       : doc.rows.findIndex((r) => r.id === doc.active);
-  return { rows, active: active === -1 ? null : active };
+  return {
+    rows,
+    active: active === -1 ? null : active,
+    ...(doc.gridOnly ? { g: true } : {}),
+  };
 }
 
 function savedToDoc(saved: SavedDoc): Doc {
@@ -99,13 +110,14 @@ function savedToDoc(saved: SavedDoc): Doc {
     saved.active !== null && saved.active >= 0 && saved.active < rows.length
       ? rows[saved.active].id
       : null;
-  return { rows, active };
+  return { rows, active, gridOnly: saved.g === true };
 }
 
 export function emptyDoc(): Doc {
   return {
     rows: [{ id: newId(), kind: "expr", src: "", shown: true }],
     active: null,
+    gridOnly: false,
   };
 }
 

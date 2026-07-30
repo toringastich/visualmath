@@ -7,6 +7,7 @@ import {
   inverse,
   lerp,
   multiply,
+  svd,
   transpose,
   type Mat2,
   type Vec2,
@@ -17,6 +18,7 @@ import {
   IDENTITY3,
   inverse3,
   multiply3,
+  svd3,
   transpose3,
   type Mat3,
 } from "../src/matrix3";
@@ -181,5 +183,194 @@ describe("3x3 algebraic laws (randomized)", () => {
       const triple = cross.x * e3.x + cross.y * e3.y + cross.z * e3.z;
       close(triple, det3(A), 1e-6);
     }
+  });
+});
+
+describe("svd (2x2)", () => {
+  // Hand-picked degenerate cases alongside the random sweep: the interesting
+  // failures all live at det = 0 or at extreme conditioning.
+  const EDGE: Mat2[] = [
+    [1, 0, 0, 1],          // identity
+    [0, 0, 0, 0],          // zero
+    [0, 1, 1, 0],          // reflection, det < 0
+    [2, 1, 4, 2],          // singular
+    [1, 2, 3, 6],          // rank 1, general position
+    [3, 0, 0, 3],          // uniform scale (repeated singular value)
+    [0.6, -0.8, 0.8, 0.6], // pure rotation
+    [1e-7, 0, 0, 5],       // σ₁/σ₂ ~ 1e8
+  ];
+  const cases = (): Mat2[] => [
+    ...EDGE,
+    ...Array.from({ length: N }, () => randMat2()),
+  ];
+
+  it("U · Σ · Vᵀ reconstructs M", () => {
+    for (const m of cases()) {
+      const s = svd(m);
+      closeMat(multiply(multiply(s.uMat, s.sMat), transpose(s.vMat)), m, 1e-8);
+    }
+  });
+
+  it("σ₁ ≥ σ₂ ≥ 0, and σ₁·σ₂ = |det M|", () => {
+    for (const m of cases()) {
+      const s = svd(m);
+      expect(s.sigma[0]).toBeGreaterThanOrEqual(s.sigma[1] - 1e-12);
+      expect(s.sigma[1]).toBeGreaterThanOrEqual(-1e-12);
+      close(s.sigma[0] * s.sigma[1], Math.abs(det(m)), 1e-8);
+    }
+  });
+
+  it("U and V are orthonormal, with V a pure rotation", () => {
+    for (const m of cases()) {
+      const s = svd(m);
+      // det V = +1 is the normalization that forces any flip into U.
+      close(det(s.vMat), 1, 1e-9);
+      for (const [a, b] of [s.u, s.v]) {
+        close(Math.hypot(a.x, a.y), 1, 1e-9);
+        close(Math.hypot(b.x, b.y), 1, 1e-9);
+        expect(Math.abs(a.x * b.x + a.y * b.y)).toBeLessThan(1e-9);
+      }
+    }
+  });
+
+  it("flags the flip exactly when det M < 0", () => {
+    for (const m of cases()) {
+      if (Math.abs(det(m)) < 1e-9) continue; // sign is free for singular M
+      expect(svd(m).flipped).toBe(det(m) < 0);
+    }
+  });
+
+  it("maps each input axis onto its semi-axis: M·vᵢ = σᵢ·uᵢ", () => {
+    for (const m of cases()) {
+      const s = svd(m);
+      for (const i of [0, 1]) {
+        const w = apply(m, s.v[i]);
+        close(w.x, s.sigma[i] * s.u[i].x, 1e-8);
+        close(w.y, s.sigma[i] * s.u[i].y, 1e-8);
+      }
+    }
+  });
+
+  it("σ₁ and σ₂ really are the extreme stretches on the unit circle", () => {
+    // The geometric claim the lesson rests on, checked by brute force rather
+    // than by trusting the formula that produced them.
+    for (const m of cases()) {
+      const s = svd(m);
+      let max = 0;
+      let min = Infinity;
+      for (let k = 0; k < 2000; k++) {
+        const a = (2 * Math.PI * k) / 2000;
+        const w = apply(m, { x: Math.cos(a), y: Math.sin(a) });
+        const n = Math.hypot(w.x, w.y);
+        if (n > max) max = n;
+        if (n < min) min = n;
+      }
+      // Sampling can only understate the max and overstate the min.
+      expect(max).toBeLessThanOrEqual(s.sigma[0] + 1e-9);
+      expect(max).toBeGreaterThan(s.sigma[0] - 1e-2 * Math.max(1, s.sigma[0]));
+      expect(min).toBeGreaterThanOrEqual(s.sigma[1] - 1e-9);
+      expect(min).toBeLessThan(s.sigma[1] + 1e-2 * Math.max(1, s.sigma[0]));
+    }
+  });
+
+  it("recovers an exactly-known decomposition", () => {
+    // Both rotations are 3-4-5 triangles, so M has short decimal entries and
+    // the singular values come back exactly 3 and 1. This is the matrix the
+    // SVD lesson takes apart.
+    const M = multiply(multiply([0.6, -0.8, 0.8, 0.6], [3, 0, 0, 1]), [0.8, 0.6, -0.6, 0.8]);
+    closeMat(M, [1.92, 0.44, 1.56, 1.92], 1e-12);
+    const s = svd(M);
+    close(s.sigma[0], 3, 1e-12);
+    close(s.sigma[1], 1, 1e-12);
+    close(s.v[0].x, 0.8, 1e-12);
+    close(s.v[0].y, 0.6, 1e-12);
+    expect(s.flipped).toBe(false);
+  });
+
+  it("a stretch-then-spin keeps the warped gridlines perpendicular", () => {
+    // Why the decomposition needs *two* rotations: with nothing in front of
+    // the stretch, the image of the grid can never be sheared.
+    for (let a = 0; a < 360; a += 3) {
+      const th = (a * Math.PI) / 180;
+      const rot: Mat2 = [Math.cos(th), -Math.sin(th), Math.sin(th), Math.cos(th)];
+      for (const [s1, s2] of [[0.2, 0.4], [1, 1], [3, 7], [12, 0.5]]) {
+        const C = multiply(rot, [s1, 0, 0, s2] as Mat2);
+        // Columns are the images of î and ĵ, i.e. the grid directions.
+        expect(Math.abs(C[0] * C[1] + C[2] * C[3])).toBeLessThan(1e-9);
+      }
+    }
+  });
+});
+
+describe("svd3", () => {
+  const EDGE: Mat3[] = [
+    IDENTITY3,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 2, 3, 4, 5, 6, 7, 8, 9],  // rank 2
+    [1, 1, 1, 1, 1, 1, 1, 1, 1],  // rank 1
+    [0, 1, 0, 1, 0, 0, 0, 0, 1],  // reflection, det < 0
+    [2, 0, 0, 0, 2, 0, 0, 0, 2],  // uniform (triply repeated σ)
+    [1e-8, 0, 0, 0, 1, 0, 0, 0, 2],
+  ];
+  const cases = (): Mat3[] => [
+    ...EDGE,
+    ...Array.from({ length: N }, () => randMat3()),
+  ];
+  const frame = (v: readonly { x: number; y: number; z: number }[]): Mat3 =>
+    [
+      v[0].x, v[1].x, v[2].x,
+      v[0].y, v[1].y, v[2].y,
+      v[0].z, v[1].z, v[2].z,
+    ] as unknown as Mat3;
+
+  it("U · Σ · Vᵀ reconstructs M", () => {
+    for (const m of cases()) {
+      const s = svd3(m);
+      const S = [s.sigma[0], 0, 0, 0, s.sigma[1], 0, 0, 0, s.sigma[2]] as unknown as Mat3;
+      const recon = multiply3(multiply3(frame(s.u), S), transpose3(frame(s.v)));
+      recon.forEach((x, k) => close(x, m[k], 1e-7));
+    }
+  });
+
+  it("σ descend, and their product is |det M|", () => {
+    for (const m of cases()) {
+      const s = svd3(m);
+      expect(s.sigma[0]).toBeGreaterThanOrEqual(s.sigma[1] - 1e-9);
+      expect(s.sigma[1]).toBeGreaterThanOrEqual(s.sigma[2] - 1e-9);
+      expect(s.sigma[2]).toBeGreaterThanOrEqual(-1e-12);
+      close(s.sigma[0] * s.sigma[1] * s.sigma[2], Math.abs(det3(m)), 1e-6);
+    }
+  });
+
+  it("U and V are orthonormal frames, with V a pure rotation", () => {
+    for (const m of cases()) {
+      const s = svd3(m);
+      close(det3(frame(s.v)), 1, 1e-7);
+      for (const F of [frame(s.u), frame(s.v)]) {
+        const g = multiply3(transpose3(F), F);
+        g.forEach((x, k) => close(x, IDENTITY3[k], 1e-7));
+      }
+    }
+  });
+
+  it("maps each input axis onto its semi-axis: M·vᵢ = σᵢ·uᵢ", () => {
+    for (const m of cases()) {
+      const s = svd3(m);
+      for (const i of [0, 1, 2]) {
+        const w = apply3(m, s.v[i]);
+        close(w.x, s.sigma[i] * s.u[i].x, 1e-7);
+        close(w.y, s.sigma[i] * s.u[i].y, 1e-7);
+        close(w.z, s.sigma[i] * s.u[i].z, 1e-7);
+      }
+    }
+  });
+
+  it("drops a singular value to zero when a row is the sum of the others", () => {
+    // The one-keystroke rank collapse the lesson's 3D panel asks for.
+    const flat: Mat3 = [1, 1, 0, 0, 2, 1, 1, 3, 1];
+    const s = svd3(flat);
+    close(det3(flat), 0, 1e-12);
+    expect(s.sigma[2]).toBeLessThan(1e-12);
+    expect(s.sigma[1]).toBeGreaterThan(1e-3);
   });
 });
