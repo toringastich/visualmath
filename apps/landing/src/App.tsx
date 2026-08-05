@@ -116,7 +116,7 @@ export default function App() {
     <div className="page">
       <nav className="nav">
         <a className="brand" href="/">
-          <span className="brand-mark">▦</span>
+          <img className="brand-mark" src="/logo.svg" alt="" width="24" height="24" />
           <span className="brand-name">{ORG_NAME}</span>
         </a>
         <div className="nav-links">
