@@ -96,9 +96,9 @@ body {
   color: inherit;
 }
 .brand-mark {
-  color: var(--blue);
-  font-size: 22px;
-  line-height: 1;
+  display: block;
+  width: 24px;
+  height: 24px;
 }
 .brand-name {
   font-size: 17px;

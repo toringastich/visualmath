@@ -9,7 +9,14 @@
       content="Secant Labs makes Warp and other free, interactive tools for seeing the mathematics where intuition goes missing. Type an object, watch it act on space — in your browser, no installs."
     />
     <link rel="canonical" href="https://secantlabs.org/" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>▦</text></svg>" />
+    <!-- Real favicon, three forms because browsers disagree. The SVG is drawn by
+         anything modern; the .ico carries 16/32/48 rasters for older browsers and
+         Windows shortcuts; the touch icon is opaque because iOS renders
+         transparency as black. All generated from brand/make-logo.py -- run
+         `npm run brand -w apps/landing` after changing the mark. -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Secant Labs" />
