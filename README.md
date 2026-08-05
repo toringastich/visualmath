@@ -91,8 +91,7 @@ add both apps to the root `build` script and the deploy workflow, decide how
 warp.us.com should be served (a cross-repo publish from here keeps the origin
 intact), and let the old URLs redirect.
 
-
-Copyright (c) 2026 Secant Labs. All rights reserved.
+## Copyright (c) 2026 Secant Labs. All rights reserved.
 
 This software is proprietary. No license, express or implied, is granted
 to use, copy, modify, merge, publish, distribute, sublicense, or sell
