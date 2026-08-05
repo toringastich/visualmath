@@ -68,7 +68,7 @@ temporary — see below.
 
 ## Frozen until Aug 31, 2026
 
-The eigenvectors article is the entry for the non-video category of
+The singular values article is the entry for the non-video category of
 **3Blue1Brown's Summer of Math Exposition 2026**. Peer review runs Aug 16–30 and
 the entry URL must not move or change during it.
 
@@ -90,3 +90,12 @@ After Aug 31 the cutover is small: point `apps/lessons` at `base: "/lessons/"`,
 add both apps to the root `build` script and the deploy workflow, decide how
 warp.us.com should be served (a cross-repo publish from here keeps the origin
 intact), and let the old URLs redirect.
+
+
+Copyright (c) 2026 Secant Labs. All rights reserved.
+
+This software is proprietary. No license, express or implied, is granted
+to use, copy, modify, merge, publish, distribute, sublicense, or sell
+copies of this software except under separate written agreement.
+
+For licensing inquiries: toringastich@gmail.com
