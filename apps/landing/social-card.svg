@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Source for public/social-card.png (1200x630, the OG/Twitter preview).
+
+  Edit this file, then re-render:
+    npm run card -w apps/landing
+
+  Same palette and motif as the landing hero, plus a matrix actually doing
+  something: M = [[2,1],[1,2]] carrying the basis vectors, with the
+  parallelogram they span shaded to show det = 3. Text is left-aligned and kept
+  well inside the edges, since some feeds crop a preview to 1.91:1.
+
+  (Note for editors: XML comments cannot contain a double hyphen, so use an
+  em dash here rather than the ASCII kind.)
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <defs>
+    <clipPath id="frame">
+      <rect width="1200" height="630" />
+    </clipPath>
+    <marker id="tip-basis" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#388c46" />
+    </marker>
+    <marker id="tip-image" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#c1653a" />
+    </marker>
+  </defs>
+
+  <g clip-path="url(#frame)">
+    <rect width="1200" height="630" fill="#fbfcfd" />
+
+    <!-- The brand motif: straight lines, warped space. -->
+    <g transform="skewX(-18)" stroke="#e5eaf0" stroke-width="1.5">
+      <g>
+        <line x1="0" y1="-60" x2="0" y2="690" />
+        <line x1="90" y1="-60" x2="90" y2="690" />
+        <line x1="180" y1="-60" x2="180" y2="690" />
+        <line x1="270" y1="-60" x2="270" y2="690" />
+        <line x1="360" y1="-60" x2="360" y2="690" />
+        <line x1="450" y1="-60" x2="450" y2="690" />
+        <line x1="540" y1="-60" x2="540" y2="690" />
+        <line x1="630" y1="-60" x2="630" y2="690" />
+        <line x1="720" y1="-60" x2="720" y2="690" />
+        <line x1="810" y1="-60" x2="810" y2="690" />
+        <line x1="900" y1="-60" x2="900" y2="690" />
+        <line x1="990" y1="-60" x2="990" y2="690" />
+        <line x1="1080" y1="-60" x2="1080" y2="690" />
+        <line x1="1170" y1="-60" x2="1170" y2="690" />
+        <line x1="1260" y1="-60" x2="1260" y2="690" />
+        <line x1="1350" y1="-60" x2="1350" y2="690" />
+      </g>
+      <g>
+        <line x1="-300" y1="0" x2="1500" y2="0" />
+        <line x1="-300" y1="90" x2="1500" y2="90" />
+        <line x1="-300" y1="180" x2="1500" y2="180" />
+        <line x1="-300" y1="270" x2="1500" y2="270" />
+        <line x1="-300" y1="360" x2="1500" y2="360" />
+        <line x1="-300" y1="450" x2="1500" y2="450" />
+        <line x1="-300" y1="540" x2="1500" y2="540" />
+        <line x1="-300" y1="630" x2="1500" y2="630" />
+      </g>
+    </g>
+
+    <!-- Wordmark -->
+    <text x="80" y="112" font-size="30" fill="#2d70b3">▦</text>
+    <text x="122" y="110" font-size="23" font-weight="700" fill="#2d70b3" letter-spacing="3.4">SECANT LABS</text>
+
+    <!-- Headline -->
+    <text x="78" y="278" font-size="82" font-weight="800" fill="#2b2f36" letter-spacing="-2.4">See what the</text>
+    <text x="78" y="366" font-size="82" font-weight="800" fill="#2b2f36" letter-spacing="-2.4">math does.</text>
+
+    <!-- Subline -->
+    <text x="80" y="432" font-size="29" fill="#6b7480">Interactive tools for linear algebra and</text>
+    <text x="80" y="474" font-size="29" fill="#6b7480">beyond — free, right in your browser.</text>
+
+    <text x="80" y="556" font-size="26" font-weight="600" fill="#2d70b3">secantlabs.org</text>
+
+    <!-- A matrix doing something: M = [[2,1],[1,2]] on the basis vectors.
+         Origin (860, 470), one unit = 62px. Both image vectors land in the
+         first quadrant, so the axes only show a stub of the negative
+         directions; extending them further just adds dead space. -->
+    <g>
+      <line x1="784" y1="470" x2="1136" y2="470" stroke="#c9d2dc" stroke-width="2" />
+      <line x1="860" y1="212" x2="860" y2="524" stroke="#c9d2dc" stroke-width="2" />
+
+      <!-- Parallelogram on M·i = (2,1) and M·j = (1,2): area = det = 3 -->
+      <polygon points="860,470 984,408 1046,284 922,346" fill="#388c46" fill-opacity="0.13" stroke="#388c46" stroke-opacity="0.32" stroke-width="2" />
+
+      <!-- M·j = (1,2) -->
+      <line x1="860" y1="470" x2="916" y2="358" stroke="#388c46" stroke-width="5.5" marker-end="url(#tip-basis)" />
+      <!-- M·i = (2,1) -->
+      <line x1="860" y1="470" x2="972" y2="414" stroke="#c1653a" stroke-width="5.5" marker-end="url(#tip-image)" />
+
+      <text x="952" y="248" font-size="25" font-weight="600" fill="#5b6472">det = 3</text>
+    </g>
+  </g>
+</svg>
