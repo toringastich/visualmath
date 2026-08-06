@@ -16,6 +16,10 @@
          `npm run brand -w apps/landing` after changing the mark. -->
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <!-- Google's search-result favicon wants a square comfortably above 48px and
+         a URL that stays put. It also cannot use a data: URI, which is what used
+         to be here -- that is why searches showed the generic globe. -->
+    <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <meta property="og:type" content="website" />

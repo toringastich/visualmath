@@ -10,6 +10,7 @@ Outputs, all into ../public unless noted:
                            16-32px, which is exactly where the regular one greys out
   favicon-16/32/48.png     raster fallbacks
   favicon.ico              16+32+48 in one file, for older browsers and Windows
+  icon-192.png             high-res square for Google's search-result favicon
   apple-touch-icon.png     180x180, opaque: iOS composites onto its own tile and
                            renders transparency as black
   logo-512.png             transparent, for slide decks and READMEs
@@ -99,6 +100,13 @@ def main() -> None:
     ico.save(PUBLIC / "favicon.ico", sizes=[(48, 48), (32, 32)],
              append_images=[tiny.resize((16, 16), Image.LANCZOS)])
 
+    # Google's search-result favicon: it wants a square well above 48px, but it
+    # *displays* the thing at roughly 20px. So this is the bold variant rendered
+    # large, not the regular one -- regular's thin strokes wash out once Google
+    # downsamples, which is the same reason `tiny` exists for browser tabs.
+    # Transparent, because Google composites the icon onto its own light chip.
+    bold.resize((192, 192), Image.LANCZOS).save(PUBLIC / "icon-192.png")
+
     regular.save(PUBLIC / "logo-512.png")
     # The regular SVG ships too: the site header draws the mark at 22px CSS but
     # on retina that is 44 real pixels, so vector beats any raster we could pick.
@@ -110,6 +118,7 @@ def main() -> None:
     shutil.rmtree(tmp)
     for f in sorted(PUBLIC.glob("favicon*")) + [
         PUBLIC / "apple-touch-icon.png",
+        PUBLIC / "icon-192.png",
         PUBLIC / "logo.svg",
         PUBLIC / "logo-512.png",
         PUBLIC / "linkedin-logo-400.png",
